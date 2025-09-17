@@ -1,5 +1,7 @@
 <script setup lang="ts">
-const layout = useSupabaseUser().value ? "main" : "auth";
+const user = useSupabaseUser();
+
+const layout = computed(() => (user.value ? "main" : "auth"));
 </script>
 
 <template>
