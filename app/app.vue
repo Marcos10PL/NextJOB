@@ -1,14 +1,14 @@
-<script setup lang="ts">
-const user = useSupabaseUser();
-
-const layout = computed(() => (user.value ? "main" : "auth"));
-</script>
-
 <template>
   <UApp>
-    <NuxtLayout :name="layout">
-      <NuxtRouteAnnouncer />
-      <NuxtPage />
-    </NuxtLayout>
+    <LayoutHeader />
+
+    <UMain class="min-h-[calc(100vh-12rem)]">
+      <UContainer>
+        <NuxtRouteAnnouncer />
+        <NuxtPage />
+      </UContainer>
+    </UMain>
+
+    <LayoutFooter />
   </UApp>
 </template>

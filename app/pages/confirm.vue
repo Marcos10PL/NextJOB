@@ -1,10 +1,18 @@
 <script setup lang="ts">
+definePageMeta({
+  layout: "auth",
+});
+
 const user = useSupabaseUser();
+const toast = useToast();
 
 watch(
   user,
   () => {
     if (user.value) {
+      toast.add({
+        title: "You have been logged in",
+      });
       return navigateTo("/");
     }
   },
