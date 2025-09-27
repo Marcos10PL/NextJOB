@@ -1,13 +1,13 @@
 <template>
   <UApp>
-    <LayoutHeader />
+    <LayoutDefaultHeader />
 
-    <UMain class="min-h-[calc(100vh-12rem)]">
+    <UMain class="min-h-[calc(100vh-14rem)] my-4">
       <UContainer>
         <slot />
       </UContainer>
     </UMain>
 
-    <LayoutFooter />
+    <LayoutDefaultFooter />
   </UApp>
 </template>

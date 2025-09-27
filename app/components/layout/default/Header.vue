@@ -14,10 +14,10 @@ const user = useSupabaseUser();
 
     <template #right>
       <div class="flex items-center gap-x-2 *:w-10 *:flex *:justify-center">
-        <LayoutNavButtonsPostButton v-if="user" />
-        <LayoutNavButtonsSettingsButton v-if="user" />
-        <LayoutNavButtonsLoginModal v-if="!user" />
-        <LayoutNavButtonsLogoutButton v-else />
+        <LayoutDefaultNavButtonsPostButton v-if="user" />
+        <LayoutDefaultNavButtonsSettingsButton v-if="user" />
+        <LayoutDefaultNavButtonsLoginModal v-if="!user" />
+        <LayoutDefaultNavButtonsLogoutButton v-else />
         <UColorModeButton />
       </div>
     </template>
