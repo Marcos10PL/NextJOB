@@ -17,6 +17,8 @@ const loading = ref(false);
 const success = ref(false);
 const error = ref<string>();
 
+const confirmUrl = useRuntimeConfig().public.confirmUrl;
+
 const onSubmit = async (
   event: FormSubmitEvent<z.output<typeof loginSchema>>
 ) => {
@@ -26,7 +28,7 @@ const onSubmit = async (
     const { error: signInError } = await supabase.auth.signInWithOtp({
       email,
       options: {
-        emailRedirectTo: "http://localhost:3000/confirm",
+        emailRedirectTo: confirmUrl,
       },
     });
     if (signInError) error.value = signInError.message;
