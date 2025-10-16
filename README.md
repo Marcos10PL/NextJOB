@@ -16,9 +16,9 @@ The NextJOB is a job board application designed to connect job seekers with empl
 - **Spring Boot 3.5.6**
 - **PostgreSQL**
 
-## Struktura projektu
+<!-- ## Project Structure
 
 ```
 ├── frontend/
 └── backend/      
-```
+``` -->
