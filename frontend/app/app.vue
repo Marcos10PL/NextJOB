@@ -1,6 +1,14 @@
+<script setup lang="ts">
+useHead({
+  titleTemplate: titleChunk => {
+    return titleChunk ? `${titleChunk} | NextJOB` : "NextJOB";
+  },
+});
+</script>
+
 <template>
-  <UApp>
+  <NuxtLayout>
     <NuxtPage />
     <NuxtRouteAnnouncer />
-  </UApp>
+  </NuxtLayout>
 </template>
