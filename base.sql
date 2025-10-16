@@ -15,10 +15,9 @@ CREATE TABLE users (
     full_name VARCHAR(255) NOT NULL,
     email VARCHAR(255) NOT NULL UNIQUE,
     password VARCHAR(255) NOT NULL,
-    phone VARCHAR(50),
-    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
     location_id INT,
     role_id INT NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
 
     CONSTRAINT users_location_id_fkey FOREIGN KEY (location_id) REFERENCES locations(id),
     CONSTRAINT users_role_id_fkey FOREIGN KEY (role_id) REFERENCES roles(id)
@@ -36,7 +35,6 @@ CREATE TABLE companies (
     name VARCHAR(255) NOT NULL,
     description TEXT,
     email VARCHAR(255) NOT NULL,
-    phone VARCHAR(50),
     website VARCHAR(255),
     industry_id INT NOT NULL,
 
