@@ -6,6 +6,8 @@ useHead({
   title: "Profile",
 });
 
+const { user } = useAuth();
+
 // const toast = useToast();
 
 const ProfileSchema = z.object({
@@ -18,11 +20,11 @@ const ProfileSchema = z.object({
 });
 
 const state = reactive<Partial<z.output<typeof ProfileSchema>>>({
-  email: "",
-  full_name: "",
-  address: undefined,
-  city: undefined,
-  country: undefined,
+  email: user.value?.email || "",
+  full_name: user.value?.fullName || "",
+  address: user.value?.address || undefined,
+  city: user.value?.city || undefined,
+  country: user.value?.country || undefined,
 });
 
 async function onSubmit(

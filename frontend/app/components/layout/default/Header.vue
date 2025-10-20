@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-const user = false; // TODO: actual auth logic
+const { user } = useAuth();
 </script>
 
 <template>

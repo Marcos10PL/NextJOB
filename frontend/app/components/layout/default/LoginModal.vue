@@ -9,10 +9,13 @@ const items = [
     slot: "signup",
   },
 ];
+
+const { isOpen } = useAuthModal();
 </script>
 
 <template>
   <UModal
+    v-model:open="isOpen"
     title="Sign In or Sign Up"
     :ui="{
       content: 'max-w-[24rem]',

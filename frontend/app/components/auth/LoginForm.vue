@@ -1,9 +1,16 @@
 <script setup lang="ts">
 import type { FormSubmitEvent } from "@nuxt/ui";
 import z from "zod";
+import type { FetchError } from "~/types";
 
 const loading = ref(false);
+const error = ref<number | null>(null);
 const success = ref(false);
+
+const { setSession, fetchUser } = useAuth();
+
+const toast = useToast();
+const { close } = useAuthModal();
 
 const loginSchema = z.object({
   email: z.email("Invalid email address"),
@@ -11,14 +18,37 @@ const loginSchema = z.object({
 });
 
 const state = reactive({
-  email: "",
-  password: "",
+  email: "user@example.com",
+  password: "user1234",
 });
 
 const onSubmit = async (
   event: FormSubmitEvent<z.output<typeof loginSchema>>
 ) => {
   console.log(event.data);
+
+  try {
+    loading.value = true;
+    error.value = null;
+    success.value = false;
+
+    const data = await $fetch("/api/auth/login", {
+      method: "POST",
+      body: event.data,
+    });
+    setSession(data.token);
+
+    await fetchUser();
+    success.value = true;
+
+    toast.add({ title: "Login Successful" });
+    close();
+  } catch (err) {
+    error.value = (err as FetchError).status || 500;
+    console.error(err);
+  } finally {
+    loading.value = false;
+  }
 };
 </script>
 
@@ -58,6 +88,9 @@ const onSubmit = async (
         label="Submit"
         :disabled="loading || success"
       />
+    </div>
+    <div v-if="error" class="text-red-400 text-center">
+      {{ mapError(error, { login: true }) }}
     </div>
   </UForm>
 </template>
