@@ -1,7 +1,9 @@
 package com.nextjob.configs;
 
+import com.nextjob.entities.Industry;
 import com.nextjob.entities.Role;
 import com.nextjob.entities.User;
+import com.nextjob.repositories.IndustryRepository;
 import com.nextjob.repositories.RoleRepository;
 import com.nextjob.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,13 +19,18 @@ public class DataInitializer implements CommandLineRunner {
     private UserRepository userRepository;
     @Autowired
     private BCryptPasswordEncoder passwordEncoder;
+    @Autowired
+    private IndustryRepository industryRepository;
 
     @Override
     public void run(String... args) {
         if (roleRepository.count() == 0) {
+
+            // ROLES
             Role userRole = roleRepository.save(new Role("USER"));
             Role adminRole = roleRepository.save(new Role("ADMIN"));
 
+            // USERS (FOR TESTING)
             if (userRepository.count() == 0) {
                 User user = new User();
                 user.setFullName("Jan Kowalski");
@@ -38,6 +45,17 @@ public class DataInitializer implements CommandLineRunner {
                 admin.setPassword(passwordEncoder.encode("admin1234"));
                 admin.setRole(adminRole);
                 userRepository.save(admin);
+            }
+
+            // INDUSTRIES
+            if (industryRepository.count() == 0) {
+                industryRepository.save(new Industry("IT"));
+                industryRepository.save(new Industry("Education"));
+                industryRepository.save(new Industry("Finance"));
+                industryRepository.save(new Industry("Retail"));
+                industryRepository.save(new Industry("Construction"));
+                industryRepository.save(new Industry("Healthcare"));
+                industryRepository.save(new Industry("Marketing"));
             }
         }
 

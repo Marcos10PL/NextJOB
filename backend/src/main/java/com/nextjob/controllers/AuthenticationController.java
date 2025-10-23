@@ -6,11 +6,15 @@ import com.nextjob.dtos.RegisterUserDto;
 import com.nextjob.entities.User;
 import com.nextjob.services.AuthenticationService;
 import com.nextjob.services.JwtService;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.Map;
 
 @RequestMapping("/api/auth")
 @RestController
@@ -25,10 +29,18 @@ public class AuthenticationController {
     }
 
     @PostMapping("/signup")
-    public ResponseEntity<User> register(@RequestBody RegisterUserDto registerUserDto) {
-        User registeredUser = authenticationService.signup(registerUserDto);
-
-        return ResponseEntity.ok(registeredUser);
+    public ResponseEntity<?> register(@RequestBody RegisterUserDto registerUserDto) {
+        try {
+            User registeredUser = authenticationService.signup(registerUserDto);
+            return ResponseEntity.ok(registeredUser);
+        } catch (DataIntegrityViolationException ex) {
+            if (ex.getMessage().contains("users_email_key")) {
+                return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of(
+                        "message", "Email jest już w użyciu"
+                ));
+            }
+            throw ex;
+        }
     }
 
     @PostMapping("/login")

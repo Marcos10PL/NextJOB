@@ -13,11 +13,15 @@ const { user } = useAuth();
     </template>
 
     <template #right>
-      <div class="flex items-center gap-x-2 *:w-10 *:flex *:justify-center">
-        <LayoutDefaultPostButton v-if="user" />
-        <LayoutDefaultSettingsButton v-if="user" />
-        <LayoutDefaultLoginModal v-if="!user" />
-        <LayoutDefaultLogoutButton v-else />
+      <div class="flex items-center sm:gap-x-2 *:w-10 *:flex *:justify-center">
+        <NavAdminButton v-if="user && user.role === 'ADMIN'" />
+
+        <NavPostButton v-if="user" />
+        <NavSettingsButton v-if="user" />
+
+        <NavLoginModal v-if="!user" />
+        <NavLogoutButton v-else />
+
         <UColorModeButton />
       </div>
     </template>

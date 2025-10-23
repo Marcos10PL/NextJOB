@@ -25,8 +25,6 @@ const state = reactive({
 const onSubmit = async (
   event: FormSubmitEvent<z.output<typeof loginSchema>>
 ) => {
-  console.log(event.data);
-
   try {
     loading.value = true;
     error.value = null;
@@ -45,7 +43,7 @@ const onSubmit = async (
     close();
   } catch (err) {
     error.value = (err as FetchError).status || 500;
-    console.error(err);
+    // console.error(err);
   } finally {
     loading.value = false;
   }

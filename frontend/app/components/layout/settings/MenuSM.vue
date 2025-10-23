@@ -12,7 +12,7 @@ const title = computed(() => {
 
 <template>
   <header
-    class="flex items-center justify-between w-full bg-neutral-800 fixed top-16 left-0 px-4 py-2 md:hidden"
+    class="flex items-center justify-between w-full bg-neutral-800 fixed top-16 left-0 px-4 py-2 md:hidden z-20"
   >
     <h1>{{ title }}</h1>
     <UDropdownMenu
