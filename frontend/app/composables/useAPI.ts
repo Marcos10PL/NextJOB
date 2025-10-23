@@ -1,4 +1,7 @@
-export const useAPI = (url: string, options: Record<string, unknown> = {}) => {
+export const useAPI = <T>(
+  url: string,
+  options: Record<string, unknown> = {}
+) => {
   const { session } = useAuth();
 
   const headers = computed<HeadersInit>(() => {
@@ -12,7 +15,7 @@ export const useAPI = (url: string, options: Record<string, unknown> = {}) => {
     return baseHeaders;
   });
 
-  return useFetch(url, {
+  return useFetch<T>(url, {
     ...options,
     headers: headers.value,
     baseURL: useRuntimeConfig().apiUrl,

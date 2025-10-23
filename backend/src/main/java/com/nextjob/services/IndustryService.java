@@ -4,6 +4,8 @@ import com.nextjob.dtos.CreateIndustryDto;
 import com.nextjob.dtos.IndustryDto;
 import com.nextjob.entities.Industry;
 import com.nextjob.repositories.IndustryRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -17,14 +19,12 @@ public class IndustryService {
         this.industryRepository = industryRepository;
     }
 
-    public List<IndustryDto> findAll() {
-        return industryRepository.findAll()
-                .stream()
-                .map(ind -> new IndustryDto(ind.getId(), ind.getName()))
-                .toList();
+    public Page<IndustryDto> findAll(Pageable pageable) {
+        return industryRepository.findAll(pageable)
+                .map(ind -> new IndustryDto(ind.getId(), ind.getName()));
     }
 
-    public IndustryDto findById(int id) {
+    public IndustryDto findById(Integer id) {
         Industry industry = industryRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Industry not found"));
         return new IndustryDto(industry.getId(), industry.getName());
@@ -40,7 +40,7 @@ public class IndustryService {
         return new IndustryDto(saved.getId(), saved.getName());
     }
 
-    public IndustryDto update(int id, CreateIndustryDto dto) {
+    public IndustryDto update(Integer id, CreateIndustryDto dto) {
         Industry industry = industryRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Industry not found"));
         industry.setName(dto.name());
@@ -48,7 +48,7 @@ public class IndustryService {
         return new IndustryDto(updated.getId(), updated.getName());
     }
 
-    public void delete(int id) {
+    public void delete(Integer id) {
         industryRepository.deleteById(id);
     }
 }

@@ -3,6 +3,8 @@ package com.nextjob.controllers;
 import com.nextjob.dtos.CreateIndustryDto;
 import com.nextjob.dtos.IndustryDto;
 import com.nextjob.services.IndustryService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -20,8 +22,8 @@ public class IndustryController {
     }
 
     @GetMapping
-    public ResponseEntity<List<IndustryDto>> getAll() {
-        return ResponseEntity.ok(industryService.findAll());
+    public Page<IndustryDto> getIndustries(Pageable pageable) {
+        return industryService.findAll(pageable);
     }
 
     @GetMapping("/{id}")

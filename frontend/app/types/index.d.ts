@@ -4,6 +4,7 @@ export type FetchError = {
 };
 
 export type User = {
+  id: string;
   fullName: string;
   email: string;
   role: "ADMIN" | "USER";
@@ -13,4 +14,19 @@ export type User = {
   address?: string;
   city?: string;
   country?: string;
+};
+
+export type Industry = {
+  id: number;
+  name: string;
+};
+
+export type PaginationResponse<T> = {
+  content: T[];
+  page: {
+    size: number;
+    number: number;
+    totalElements: number;
+    totalPages: number;
+  };
 };

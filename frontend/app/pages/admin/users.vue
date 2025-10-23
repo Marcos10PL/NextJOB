@@ -2,7 +2,11 @@
 import type { User } from "~/types";
 import type { TableColumn } from "@nuxt/ui";
 
-const { data: users, status } = useAPI("/api/users");
+const { data: users, status, refresh } = await useAPI<User[]>("/api/users");
+
+const toast = useToast();
+
+const { user } = useAuth();
 
 const parseDate = (dateStr: string) => {
   return new Date(dateStr).toLocaleString("en-US", {
@@ -14,6 +18,29 @@ const parseDate = (dateStr: string) => {
   });
 };
 
+const UButton = resolveComponent("UButton");
+
+const deleteUser = async (userId: number) => {
+  const { execute, error } = useAPI(`/api/users/${userId}`, {
+    method: "DELETE",
+    immediate: false,
+  });
+
+  await execute();
+
+  if (error.value) {
+    console.error(error.value);
+    toast.add({
+      title: "Error deleting user",
+      color: "error",
+    });
+    return;
+  }
+
+  toast.add({ title: "User Deleted" });
+  await refresh();
+};
+
 const columns: TableColumn<User>[] = [
   {
     accessorKey: "id",
@@ -23,6 +50,13 @@ const columns: TableColumn<User>[] = [
   {
     accessorKey: "email",
     header: "Email",
+    cell: ({ row }) =>
+      row.getValue("email") +
+      (row.getValue("id") === user?.value?.id ? " (you)" : ""),
+  },
+  {
+    accessorKey: "fullName",
+    header: "Full Name",
   },
   {
     accessorKey: "role",
@@ -45,19 +79,30 @@ const columns: TableColumn<User>[] = [
   {
     accessorKey: "",
     header: "Actions",
-    cell: () => {
-      return "—";
+    cell: ({ row }) => {
+      const userRow = row.original;
+
+      return h("div", [
+        h(
+          UButton,
+          {
+            color: "neutral",
+            variant: "ghost",
+            class: "text-red-400 cursor-pointer",
+            disabled: userRow.role === "ADMIN",
+            "aria-label": "Actions dropdown",
+            onClick: () => deleteUser(Number(userRow.id)),
+          },
+          "Delete"
+        ),
+      ]);
     },
   },
 ];
 </script>
 
 <template>
-  <div>
-    <UTable
-      :data="users as User[]"
-      :loading="status === 'pending'"
-      :columns="columns"
-    />
-  </div>
+  <NuxtLayout name="admin">
+    <UTable :data="users" :loading="status === 'pending'" :columns="columns" />
+  </NuxtLayout>
 </template>
