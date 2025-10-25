@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import z from "zod";
 import type { FormSubmitEvent } from "@nuxt/ui";
+import type { User } from "~/types";
 
 useHead({
   title: "Profile",
@@ -8,11 +9,11 @@ useHead({
 
 const { user } = useAuth();
 
-// const toast = useToast();
+const toast = useToast();
 
 const ProfileSchema = z.object({
   email: z.email("Invalid email address"),
-  full_name: z.string().min(2, "Full name must be at least 2 characters long"),
+  fullName: z.string().min(2, "Full name must be at least 2 characters long"),
 
   address: z.string().optional(),
   city: z.string().optional(),
@@ -21,7 +22,7 @@ const ProfileSchema = z.object({
 
 const state = reactive<Partial<z.output<typeof ProfileSchema>>>({
   email: user.value?.email || "",
-  full_name: user.value?.fullName || "",
+  fullName: user.value?.fullName || "",
   address: user.value?.address || undefined,
   city: user.value?.city || undefined,
   country: user.value?.country || undefined,
@@ -30,7 +31,55 @@ const state = reactive<Partial<z.output<typeof ProfileSchema>>>({
 async function onSubmit(
   event: FormSubmitEvent<z.output<typeof ProfileSchema>>
 ) {
-  console.log(event.data);
+  const hasChanges =
+    event.data.email !== user.value?.email ||
+    event.data.fullName !== user.value?.fullName ||
+    event.data.address !== user.value?.address ||
+    event.data.city !== user.value?.city ||
+    event.data.country !== user.value?.country;
+
+  if (!hasChanges) {
+    toast.add({
+      title: "No changes to update",
+      color: "info",
+    });
+    return;
+  }
+
+  const { data, error } = await useAPI<User>("/api/users/me", {
+    method: "PATCH",
+    body: event.data,
+  });
+
+  if (error.value) {
+    toast.add({
+      title: "Error updating profile",
+      color: "error",
+    });
+    return;
+  }
+
+  if (data.value) {
+    if (user.value) {
+      user.value.email = data.value.email;
+      user.value.fullName = data.value.fullName;
+
+      user.value.address = data.value.address || "";
+      user.value.city = data.value.city || "";
+      user.value.country = data.value.country || "";
+    }
+
+    state.email = data.value.email || "";
+    state.fullName = data.value.fullName || "";
+    state.address = data.value.address || "";
+    state.city = data.value.city || "";
+    state.country = data.value.country || "";
+  }
+
+  toast.add({
+    title: "Profile updated successfully",
+    color: "success",
+  });
 }
 </script>
 
@@ -42,15 +91,23 @@ async function onSubmit(
       class="space-y-6"
       @submit="onSubmit"
     >
-      <div
-        class="grid grid-cols-1 md:grid-cols-2 gap-8 *:w-full *:**:w-full max-w-xl"
-      >
+      <div class="flex flex-col gap-8 *:w-full *:**:w-full max-w-xl">
+        <SettingsFormHeader>
+          When you post a job announcement as a personal user, the information
+          from this profile will be used to display your details to potential
+          applicants.
+        </SettingsFormHeader>
         <UFormField label="Email" name="email">
           <UInput v-model="state.email" />
         </UFormField>
-        <UFormField label="Full Name" name="full_name">
-          <UInput v-model="state.full_name" />
+        <UFormField label="Full Name" name="fullName">
+          <UInput v-model="state.fullName" />
         </UFormField>
+
+        <SettingsFormSeparator>
+          This is your personal address information. It can be different from
+          the address you use in your job announcements.
+        </SettingsFormSeparator>
 
         <UFormField label="Address" name="address">
           <UInput v-model="state.address" />
@@ -61,8 +118,11 @@ async function onSubmit(
         <UFormField label="Country" name="country">
           <UInput v-model="state.country" />
         </UFormField>
-        <UButton type="submit" class="px-8 max-h-fit self-end justify-center">
-          Submit
+        <UButton
+          type="submit"
+          class="px-8 max-h-fit self-end justify-center cursor-pointer"
+        >
+          Update
         </UButton>
       </div>
     </UForm>

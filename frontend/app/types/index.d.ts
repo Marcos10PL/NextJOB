@@ -10,7 +10,8 @@ export type User = {
   role: "ADMIN" | "USER";
   createdAt: string;
   updatedAt: string;
-
+  
+  // Optional location fields
   address?: string;
   city?: string;
   country?: string;
