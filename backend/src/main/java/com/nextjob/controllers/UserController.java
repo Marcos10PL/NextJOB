@@ -1,9 +1,11 @@
 package com.nextjob.controllers;
 
-import com.nextjob.dtos.LoginUserDto;
+import com.nextjob.dtos.UpdateUserDto;
 import com.nextjob.dtos.UserDto;
 import com.nextjob.entities.User;
+import com.nextjob.mappers.UserMapper;
 import com.nextjob.services.UserService;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -26,35 +28,26 @@ public class UserController {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         User currentUser = (User) authentication.getPrincipal();
+        return ResponseEntity.ok(UserMapper.toDto(currentUser));
+    }
 
-        UserDto dto = new UserDto(
-                currentUser.getId(),
-                currentUser.getFullName(),
-                currentUser.getEmail(),
-                currentUser.getRole().getName(),
-                currentUser.getCreatedAt(),
-                currentUser.getUpdatedAt()
-        );
-
-        return ResponseEntity.ok(dto);
+    @PatchMapping("/me")
+    public ResponseEntity<UserDto> updateOwnProfile(@Valid @RequestBody UpdateUserDto dto) {
+        User currentUser = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        User updatedUser = userService.updateUser(currentUser.getId(), dto);
+        return ResponseEntity.ok(UserMapper.toDto(updatedUser));
     }
 
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<UserDto>> allUsers() {
         List<UserDto> userDtos = userService.allUsers().stream()
-                .map(u -> new UserDto(
-                        u.getId(),
-                        u.getFullName(),
-                        u.getEmail(),
-                        u.getRole().getName(),
-                        u.getCreatedAt(),
-                        u.getUpdatedAt()
-                ))
+                .map(UserMapper::toDto)
                 .toList();
 
         return ResponseEntity.ok(userDtos);
     }
+
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")

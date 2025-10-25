@@ -40,9 +40,14 @@ public class User implements UserDetails {
     @JoinColumn(name = "role_id", nullable = false, foreignKey = @ForeignKey(name = "FK_USER_ROLE"))
     private Role role;
 
-    @ManyToOne
-    @JoinColumn(name = "location_id", nullable = true, foreignKey = @ForeignKey(name = "FK_USER_LOCATION"))
-    private Location location;
+    @Column(nullable = true)
+    private String address;
+
+    @Column(nullable = true)
+    private String city;
+
+    @Column(nullable = true)
+    private String country;
 
     // auth
     @Override
@@ -133,11 +138,28 @@ public class User implements UserDetails {
         this.role = role;
     }
 
-    public Location getLocation() {
-        return location;
+    public String getAddress() {
+        return address;
     }
 
-    public void setLocation(Location location) {
-        this.location = location;
+    public void setAddress(String address) {
+        this.address = address;
+    }
+
+    public String getCity() {
+        return city;
+    }
+
+    public void setCity(String city) {
+        this.city = city;
+    }
+
+    public String getCountry() {
+        return country;
+    }
+
+    public void setCountry(String country) {
+        this.country = country;
     }
 }
+

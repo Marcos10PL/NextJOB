@@ -8,6 +8,9 @@ public record UserDto(
         String email,
         String role,
         Date createdAt,
-        Date updatedAt
+        Date updatedAt,
+        String address,
+        String city,
+        String country
 ) {}
 

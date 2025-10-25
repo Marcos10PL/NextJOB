@@ -1,5 +1,6 @@
 package com.nextjob.services;
 
+import com.nextjob.dtos.UpdateUserDto;
 import com.nextjob.entities.User;
 import com.nextjob.repositories.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -26,5 +27,40 @@ public class UserService {
             throw new EntityNotFoundException("User with id " + id + " not found");
         }
         userRepository.deleteById(id);
+    }
+
+    @Transactional
+    public User updateUser(int userId, UpdateUserDto dto) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+
+        if (dto.fullName() != null) {
+            user.setFullName(dto.fullName());
+        }
+
+        if (dto.email() != null) {
+            userRepository.findByEmail(dto.email())
+                    .filter(u -> !u.getId().equals(userId))
+                    .ifPresent(u -> {
+                        throw new IllegalArgumentException("Email already in use");
+                    });
+
+            user.setEmail(dto.email());
+        }
+
+        // address info (directly in user)
+        if (dto.address() != null) {
+            user.setAddress(dto.address());
+        }
+
+        if (dto.city() != null) {
+            user.setCity(dto.city());
+        }
+
+        if (dto.country() != null) {
+            user.setCountry(dto.country());
+        }
+
+        return userRepository.save(user);
     }
 }

@@ -3,23 +3,17 @@ CREATE TABLE roles (
     name VARCHAR(50) NOT NULL UNIQUE  -- 'admin', 'user'
 );
 
-CREATE TABLE locations (
-    id SERIAL PRIMARY KEY,
-    address VARCHAR(255),
-    city VARCHAR(100),
-    country VARCHAR(100),
-);
-
 CREATE TABLE users (
     id SERIAL PRIMARY KEY,
     full_name VARCHAR(255) NOT NULL,
     email VARCHAR(255) NOT NULL UNIQUE,
     password VARCHAR(255) NOT NULL,
-    location_id INT,
     role_id INT NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
+    address VARCHAR(255),
+    city VARCHAR(100),
+    country VARCHAR(100),
 
-    CONSTRAINT users_location_id_fkey FOREIGN KEY (location_id) REFERENCES locations(id),
     CONSTRAINT users_role_id_fkey FOREIGN KEY (role_id) REFERENCES roles(id)
 );
 
@@ -37,11 +31,20 @@ CREATE TABLE companies (
     email VARCHAR(255) NOT NULL,
     website VARCHAR(255),
     industry_id INT NOT NULL,
+    address VARCHAR(255),
+    city VARCHAR(100),
+    country VARCHAR(100),
 
     CONSTRAINT job_announcements_author_id_fkey FOREIGN KEY (author_id) REFERENCES users(id),
     CONSTRAINT job_announcements_company_id_fkey FOREIGN KEY (company_id) REFERENCES companies(id),
     CONSTRAINT job_announcements_industry_id_fkey FOREIGN KEY (industry_id) REFERENCES industries(id)
 );
+
+CREATE TABLE contract_types (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100) NOT NULL UNIQUE  
+);
+-- b2b, employment_contract, mandate_contract, specific_task_contract, internship_contract, other
 
 CREATE TABLE job_announcements (
     id SERIAL PRIMARY KEY,
@@ -49,7 +52,7 @@ CREATE TABLE job_announcements (
     company_id INT,  -- user who created the announcement but as a company
     title TEXT NOT NULL,
     description TEXT NOT NULL,
-    contract TEXT[] NOT NULL, -- b2b, employment_contract, mandate_contract, specific_task_contract, internship_contract, other
+    contract_type_id INT NOT NULL,
     workload TEXT[] NOT NULL,
     work_mode TEXT[] NOT NULL, -- remote, on_site, hybrid
     salary_min INT NOT NULL,
@@ -58,16 +61,22 @@ CREATE TABLE job_announcements (
     payment_type VARCHAR(50) NOT NULL,  -- hourly, weekly, monthly
     created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT now(),
     industry_id INT NOT NULL,
+    address VARCHAR(255),
+    city VARCHAR(100),
+    country VARCHAR(100),
 
     CONSTRAINT job_announcements_author_id_fkey FOREIGN KEY (author_id) REFERENCES users(id),
     CONSTRAINT job_announcements_company_id_fkey FOREIGN KEY (company_id) REFERENCES companies(id),
-    CONSTRAINT job_announcements_industry_id_fkey FOREIGN KEY (industry_id) REFERENCES industries(id)
+    CONSTRAINT job_announcements_industry_id_fkey FOREIGN KEY (industry_id) REFERENCES industries(id),
+    CONSTRAINT job_announcements_contract_type_id_fkey FOREIGN KEY (contract_type_id) REFERENCES contract_types(id)
 );
 
 CREATE TABLE job_seeker_profiles (
     id SERIAL PRIMARY KEY,
     user_id INT NOT NULL,
-    message TEXT,
+    full_name VARCHAR(255) NOT NULL,
+    email VARCHAR(255) NOT NULL,
+    message TEXT NOT NULL,
     cv_name VARCHAR(255) DEFAULT '',
     cv_path VARCHAR(255),
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
