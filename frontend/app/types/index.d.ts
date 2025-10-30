@@ -43,3 +43,9 @@ export type Company = {
   city?: string;
   country?: string;
 };
+
+export type JobSeeker = {
+  email: string;
+  fullName: string;
+  message: string;
+}

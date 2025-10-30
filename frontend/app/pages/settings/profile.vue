@@ -23,10 +23,12 @@ const ProfileSchema = z.object({
 const state = reactive<Partial<z.output<typeof ProfileSchema>>>({
   email: user.value?.email || "",
   fullName: user.value?.fullName || "",
-  address: user.value?.address || undefined,
-  city: user.value?.city || undefined,
-  country: user.value?.country || undefined,
+  address: user.value?.address || "",
+  city: user.value?.city || "",
+  country: user.value?.country || "",
 });
+
+const loading = ref(false);
 
 async function onSubmit(
   event: FormSubmitEvent<z.output<typeof ProfileSchema>>
@@ -34,7 +36,7 @@ async function onSubmit(
   const hasChanges =
     event.data.email !== user.value?.email ||
     event.data.fullName !== user.value?.fullName ||
-    event.data.address !== user.value?.address ||
+    event.data.address != user.value?.address ||
     event.data.city !== user.value?.city ||
     event.data.country !== user.value?.country;
 
@@ -46,6 +48,7 @@ async function onSubmit(
     return;
   }
 
+  loading.value = true;
   const { data, error } = await useAPI<User>("/api/users/me", {
     method: "PATCH",
     body: event.data,
@@ -56,6 +59,7 @@ async function onSubmit(
       title: "Error updating profile",
       color: "error",
     });
+    loading.value = false;
     return;
   }
 
@@ -70,6 +74,7 @@ async function onSubmit(
     title: "Profile updated successfully",
     color: "success",
   });
+  loading.value = false;
 }
 </script>
 
@@ -111,6 +116,7 @@ async function onSubmit(
         <UButton
           type="submit"
           class="px-8 max-h-fit self-end justify-center cursor-pointer"
+          :disabled="loading"
         >
           Update
         </UButton>

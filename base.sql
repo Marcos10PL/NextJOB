@@ -45,21 +45,44 @@ CREATE TABLE contract_types (
 );
 -- b2b, employment_contract, mandate_contract, specific_task_contract, internship_contract, other
 
+CREATE TABLE workload_types (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(50) NOT NULL UNIQUE  
+);
+-- full_time, part_time, temporary, internship
+
+CREATE TABLE work_modes (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(50) NOT NULL UNIQUE  
+);
+-- remote, on_site, hybrid
+
+CREATE TABLE payment_types (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100) NOT NULL UNIQUE
+);
+-- hourly, weekly, monthly
+
 CREATE TABLE job_announcements (
     id SERIAL PRIMARY KEY,
+
     author_id INT,   -- user who created the announcement
     company_id INT,  -- user who created the announcement but as a company
+
     title TEXT NOT NULL,
     description TEXT NOT NULL,
+
     contract_type_id INT NOT NULL,
-    workload TEXT[] NOT NULL,
-    work_mode TEXT[] NOT NULL, -- remote, on_site, hybrid
+    workload_type_id INT NOT NULL, 
+    work_mode_id INT NOT NULL,
+    payment_type_id INT NOT NULL,
+
+    industry_id INT NOT NULL,
+
     salary_min INT NOT NULL,
     salary_max INT NOT NULL,
     is_cv_required BOOLEAN NOT NULL,
-    payment_type VARCHAR(50) NOT NULL,  -- hourly, weekly, monthly
     created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT now(),
-    industry_id INT NOT NULL,
     address VARCHAR(255),
     city VARCHAR(100),
     country VARCHAR(100),
@@ -67,18 +90,30 @@ CREATE TABLE job_announcements (
     CONSTRAINT job_announcements_author_id_fkey FOREIGN KEY (author_id) REFERENCES users(id),
     CONSTRAINT job_announcements_company_id_fkey FOREIGN KEY (company_id) REFERENCES companies(id),
     CONSTRAINT job_announcements_industry_id_fkey FOREIGN KEY (industry_id) REFERENCES industries(id),
-    CONSTRAINT job_announcements_contract_type_id_fkey FOREIGN KEY (contract_type_id) REFERENCES contract_types(id)
+    CONSTRAINT job_announcements_contract_type_id_fkey FOREIGN KEY (contract_type_id) REFERENCES contract_types(id),
+    CONSTRAINT job_announcements_workload_type_id_fkey FOREIGN KEY (workload_type_id) REFERENCES workload_types(id),
+    CONSTRAINT job_announcements_work_mode_id_fkey FOREIGN KEY (work_mode_id) REFERENCES work_modes(id),
+    CONSTRAINT job_announcements_payment_type_id_fkey FOREIGN KEY (payment_type_id) REFERENCES payment_types(id)
 );
 
-CREATE TABLE job_seeker_profiles (
+CREATE TABLE job_seekers(
     id SERIAL PRIMARY KEY,
     user_id INT NOT NULL,
     full_name VARCHAR(255) NOT NULL,
     email VARCHAR(255) NOT NULL,
     message TEXT NOT NULL,
-    cv_name VARCHAR(255) DEFAULT '',
-    cv_path VARCHAR(255),
-    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
+    -- cv_name VARCHAR(255) DEFAULT '',
+    -- cv_path VARCHAR(255),
 
-    CONSTRAINT job_seeker_profiles_user_id_fkey FOREIGN KEY (user_id) REFERENCES users(id)
+    CONSTRAINT job_seekers_user_id_fkey FOREIGN KEY (user_id) REFERENCES users(id)
+);
+
+CREATE TABLE applications (
+    id SERIAL PRIMARY KEY,
+    job_announcement_id INT NOT NULL,
+    job_seeker_id INT NOT NULL,
+    applied_at TIMESTAMP WITHOUT TIME ZONE DEFAULT now(),
+
+    CONSTRAINT applications_job_announcement_id_fkey FOREIGN KEY (job_announcement_id) REFERENCES job_announcements(id) ON DELETE CASCADE,
+    CONSTRAINT applications_job_seeker_id_fkey FOREIGN KEY (job_seeker_id) REFERENCES job_seekers(id) ON DELETE CASCADE
 );

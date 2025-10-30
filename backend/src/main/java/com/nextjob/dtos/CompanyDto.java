@@ -18,4 +18,5 @@ public record CompanyDto(
         String address,
         String city,
         String country
-) {}
+) {
+}

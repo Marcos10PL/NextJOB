@@ -12,17 +12,18 @@ const { user } = useAuth();
 
 const toast = useToast();
 
-const { data: industries } = await useAPI<PaginationResponse<Industry>>(
-  "/api/industries",
-  {
-    method: "GET",
-    query: {
-      size: 1000,
-    },
-  }
-);
+const { data: industries, status: industriesStatus } = await useAPI<
+  PaginationResponse<Industry>
+>("/api/industries", {
+  method: "GET",
+  query: {
+    size: 1000,
+  },
+});
 
-const { data: companyProfile } = await useAPI<Company[]>("/api/companies", {
+const { data: companyProfile, status: companyProfileStatus } = await useAPI<
+  Company[]
+>("/api/companies", {
   method: "GET",
   query: {
     ownerId: user.value?.id,
@@ -75,6 +76,8 @@ watch(
   { immediate: true }
 );
 
+const loading = ref(false);
+
 async function onSubmit(
   event: FormSubmitEvent<z.output<typeof CompanyProfileSchema>>
 ) {
@@ -89,6 +92,7 @@ async function onSubmit(
   }
 
   if (!isCompanyExists.value) {
+    loading.value = true;
     const { data, error } = await useAPI<Company>("/api/companies", {
       method: "POST",
       body: event.data,
@@ -99,6 +103,7 @@ async function onSubmit(
         title: "Error updating profile",
         color: "error",
       });
+      loading.value = false;
       return;
     }
 
@@ -108,6 +113,7 @@ async function onSubmit(
       isCompanyExists.value = true;
     }
   } else {
+    loading.value = true;
     const { data, error } = await useAPI<Company>(`/api/companies/me`, {
       method: "PATCH",
       body: event.data,
@@ -118,6 +124,7 @@ async function onSubmit(
         title: "Error updating profile",
         color: "error",
       });
+      loading.value = false;
       return;
     }
 
@@ -131,6 +138,7 @@ async function onSubmit(
     title: "Profile updated successfully",
     color: "success",
   });
+  loading.value = false;
 }
 </script>
 
@@ -220,8 +228,13 @@ async function onSubmit(
         <UButton
           type="submit"
           class="px-8 max-h-fit self-end justify-center cursor-pointer"
+          :disabled="
+            industriesStatus === 'pending' ||
+            companyProfileStatus === 'pending' ||
+            loading
+          "
         >
-          Submit
+          {{ isCompanyExists ? "Update Profile" : "Create Profile" }}
         </UButton>
       </div>
     </UForm>
