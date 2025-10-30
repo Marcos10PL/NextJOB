@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import z from "zod";
 import type { FormSubmitEvent } from "@nuxt/ui";
-import type { Industry, PaginationResponse } from "~/types";
+import type { Company, Industry, PaginationResponse } from "~/types";
+import deepEqual from "fast-deep-equal";
 
 useHead({
   title: "Company Profile",
@@ -9,7 +10,7 @@ useHead({
 
 const { user } = useAuth();
 
-// const toast = useToast();
+const toast = useToast();
 
 const { data: industries } = await useAPI<PaginationResponse<Industry>>(
   "/api/industries",
@@ -20,6 +21,13 @@ const { data: industries } = await useAPI<PaginationResponse<Industry>>(
     },
   }
 );
+
+const { data: companyProfile } = await useAPI<Company[]>("/api/companies", {
+  method: "GET",
+  query: {
+    ownerId: user.value?.id,
+  },
+});
 
 const DESC_MAX_SIZE = 500;
 
@@ -44,33 +52,85 @@ const CompanyProfileSchema = z.object({
   country: z.string().optional(),
 });
 
+const company = computed(() => companyProfile.value?.[0] || null);
+const isCompanyExists = ref(!!company.value);
+
 const state = reactive<Partial<z.output<typeof CompanyProfileSchema>>>({
-  email: user.value?.email || "",
-  name: "",
-  description: "",
-  website: "",
-  industryId: undefined,
-  address: "",
-  city: "",
-  country: "",
+  email: company.value?.email || user.value?.email || "",
+  name: company.value?.name || "",
+  description: company.value?.description || "",
+  website: company.value?.website || "",
+  industryId: company.value?.industryId || undefined,
+  address: company.value?.address || "",
+  city: company.value?.city || "",
+  country: company.value?.country || "",
 });
+
+watch(
+  company,
+  newVal => {
+    isCompanyExists.value = !!newVal;
+    Object.assign(state, newVal);
+  },
+  { immediate: true }
+);
 
 async function onSubmit(
   event: FormSubmitEvent<z.output<typeof CompanyProfileSchema>>
 ) {
-  console.log(event.data);
-  // if (error.value) {
-  //   toast.add({
-  //     title: "Error updating profile",
-  //     color: "error",
-  //   });
-  //   return;
-  // }
+  const hasChanges = !deepEqual(event.data, company.value);
 
-  // toast.add({
-  //   title: "Profile updated successfully",
-  //   color: "success",
-  // });
+  if (!hasChanges) {
+    toast.add({
+      title: "No changes to update",
+      color: "info",
+    });
+    return;
+  }
+
+  if (!isCompanyExists.value) {
+    const { data, error } = await useAPI<Company>("/api/companies", {
+      method: "POST",
+      body: event.data,
+    });
+
+    if (error.value) {
+      toast.add({
+        title: "Error updating profile",
+        color: "error",
+      });
+      return;
+    }
+
+    if (data.value) {
+      Object.assign(state, data.value);
+      companyProfile.value = [data.value];
+      isCompanyExists.value = true;
+    }
+  } else {
+    const { data, error } = await useAPI<Company>(`/api/companies/me`, {
+      method: "PATCH",
+      body: event.data,
+    });
+
+    if (error.value) {
+      toast.add({
+        title: "Error updating profile",
+        color: "error",
+      });
+      return;
+    }
+
+    if (data.value) {
+      Object.assign(state, data.value);
+      companyProfile.value = [data.value];
+    }
+  }
+
+  toast.add({
+    title: "Profile updated successfully",
+    color: "success",
+  });
 }
 </script>
 

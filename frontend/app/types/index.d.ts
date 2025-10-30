@@ -31,3 +31,15 @@ export type PaginationResponse<T> = {
     totalPages: number;
   };
 };
+
+export type Company = {
+  id: number;
+  name: string;
+  email: string;
+  description: string;
+  website: string;
+  industryId: number;
+  address?: string;
+  city?: string;
+  country?: string;
+};

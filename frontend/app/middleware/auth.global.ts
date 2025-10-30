@@ -5,13 +5,7 @@ export default defineNuxtRouteMiddleware(async to => {
     await fetchUser();
   }
 
-  const protectedRoutes = [
-    "/post-job",
-    "/settings",
-    "/settings/profile",
-    "/settings/delete-account",
-    "/settings/job-seeker-profile",
-  ];
+  const protectedRoutes = ["/post-job", "/settings"];
 
   const isAdminRoute = to.path.startsWith("/admin");
 
@@ -24,7 +18,7 @@ export default defineNuxtRouteMiddleware(async to => {
     }
   }
 
-  if (!user.value && protectedRoutes.includes(to.path)) {
+  if (!user.value && protectedRoutes.some(route => to.path.startsWith(route))) {
     return createError({
       statusCode: 404,
       statusMessage: "Page not found: " + to.path,

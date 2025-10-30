@@ -35,9 +35,8 @@ CREATE TABLE companies (
     city VARCHAR(100),
     country VARCHAR(100),
 
-    CONSTRAINT job_announcements_author_id_fkey FOREIGN KEY (author_id) REFERENCES users(id),
-    CONSTRAINT job_announcements_company_id_fkey FOREIGN KEY (company_id) REFERENCES companies(id),
-    CONSTRAINT job_announcements_industry_id_fkey FOREIGN KEY (industry_id) REFERENCES industries(id)
+    CONSTRAINT companies_owner_id_fkey FOREIGN KEY (owner_id) REFERENCES users(id) ON DELETE CASCADE,
+    CONSTRAINT companies_industry_id_fkey FOREIGN KEY (industry_id) REFERENCES industries(id) ON DELETE SET NULL
 );
 
 CREATE TABLE contract_types (

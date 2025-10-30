@@ -61,19 +61,9 @@ async function onSubmit(
 
   if (data.value) {
     if (user.value) {
-      user.value.email = data.value.email;
-      user.value.fullName = data.value.fullName;
-
-      user.value.address = data.value.address || "";
-      user.value.city = data.value.city || "";
-      user.value.country = data.value.country || "";
+      Object.assign(user.value, data.value);
     }
-
-    state.email = data.value.email || "";
-    state.fullName = data.value.fullName || "";
-    state.address = data.value.address || "";
-    state.city = data.value.city || "";
-    state.country = data.value.country || "";
+    Object.assign(state, data.value);
   }
 
   toast.add({
