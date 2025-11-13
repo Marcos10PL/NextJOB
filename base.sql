@@ -79,8 +79,8 @@ CREATE TABLE job_announcements (
 
     industry_id INT NOT NULL,
 
-    salary_min INT NOT NULL,
-    salary_max INT NOT NULL,
+    salary_min BIGINT NOT NULL,
+    salary_max BIGINT NOT NULL,
     is_cv_required BOOLEAN NOT NULL,
     created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT now(),
     address VARCHAR(255),

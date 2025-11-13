@@ -46,8 +46,9 @@ const CompanyProfileSchema = z.object({
     ),
 
   email: z.email("Invalid email address"),
-  website: z.url("Invalid website URL").optional(),
+  website: z.url("Invalid website URL").or(z.literal("")),
   industryId: z.number("Industry is required").int("Industry is required"),
+  
   address: z.string().optional(),
   city: z.string().optional(),
   country: z.string().optional(),
@@ -151,11 +152,11 @@ async function onSubmit(
       @submit="onSubmit"
     >
       <div class="flex flex-col gap-8 max-w-xl *:w-full">
-        <SettingsFormHeader>
+        <FormsHeader>
           When you post a job announcement as a company, the information from
           this profile will be used to display company details to potential
           applicants.
-        </SettingsFormHeader>
+        </FormsHeader>
         <UFormField label="Name" name="name">
           <UInput
             v-model="state.name"
@@ -171,23 +172,15 @@ async function onSubmit(
           <UInput v-model="state.email" class="w-full" />
         </UFormField>
 
-        <UFormField
+        <FormsTextarea
+          v-model="state.description"
+          :max-size="DESC_MAX_SIZE"
+          :rows="5"
           label="Description"
           name="description"
-          :description="
-            state.description
-              ? `You have used ${state.description.length} out of ${DESC_MAX_SIZE} characters.`
-              : `Provide a brief description of your company (max ${DESC_MAX_SIZE} characters).`
-          "
-        >
-          <UTextarea
-            v-model="state.description"
-            :rows="4"
-            class="w-full"
-            placeholder="Your company description..."
-            :maxlength="DESC_MAX_SIZE"
-          />
-        </UFormField>
+          placeholder="Your company description..."
+          description="Provide a brief description of your company."
+        />
 
         <UFormField label="Website" name="website">
           <UInput
@@ -211,10 +204,10 @@ async function onSubmit(
           />
         </UFormField>
 
-        <SettingsFormSeparator>
+        <FormsSeparator>
           This is your company's address information. It can be different from
           the address you use in your job announcements.
-        </SettingsFormSeparator>
+        </FormsSeparator>
 
         <UFormField label="Address" name="address">
           <UInput v-model="state.address" class="w-full" />

@@ -131,10 +131,10 @@ async function onSubmit(
       @submit="onSubmit"
     >
       <div class="flex flex-col gap-8 *:w-full max-w-xl">
-        <SettingsFormHeader>
+        <FormsHeader>
           This is your job seeker profile information. It will be used to
           display your details to potential employers when you apply for jobs.
-        </SettingsFormHeader>
+        </FormsHeader>
         <UFormField label="Email" name="email">
           <UInput v-model="state.email" class="w-full" />
         </UFormField>

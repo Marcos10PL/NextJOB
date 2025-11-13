@@ -87,11 +87,11 @@ async function onSubmit(
       @submit="onSubmit"
     >
       <div class="flex flex-col gap-8 *:w-full *:**:w-full max-w-xl">
-        <SettingsFormHeader>
+        <FormsHeader>
           When you post a job announcement as a personal user, the information
           from this profile will be used to display your details to potential
           applicants.
-        </SettingsFormHeader>
+        </FormsHeader>
         <UFormField label="Email" name="email">
           <UInput v-model="state.email" />
         </UFormField>
@@ -99,10 +99,10 @@ async function onSubmit(
           <UInput v-model="state.fullName" />
         </UFormField>
 
-        <SettingsFormSeparator>
+        <FormsSeparator>
           This is your personal address information. It can be different from
           the address you use in your job announcements.
-        </SettingsFormSeparator>
+        </FormsSeparator>
 
         <UFormField label="Address" name="address">
           <UInput v-model="state.address" />
