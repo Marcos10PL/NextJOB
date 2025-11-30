@@ -22,6 +22,26 @@ export type Industry = {
   name: string;
 };
 
+export type ContractType = {
+  id: number;
+  name: string;
+};
+
+export type WorkloadType = {
+  id: number;
+  name: string;
+};
+
+export type WorkMode = {
+  id: number;
+  name: string;
+};
+
+export type PaymentType = {
+  id: number;
+  name: string;
+};
+
 export type PaginationResponse<T> = {
   content: T[];
   page: {
@@ -49,3 +69,4 @@ export type JobSeeker = {
   fullName: string;
   message: string;
 }
+

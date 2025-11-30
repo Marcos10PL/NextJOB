@@ -1,6 +1,14 @@
 <script setup lang="ts">
 import z from "zod";
-import type { Company, Industry, PaginationResponse } from "~/types";
+import type {
+  Company,
+  ContractType,
+  Industry,
+  PaginationResponse,
+  PaymentType,
+  WorkloadType,
+  WorkMode,
+} from "~/types";
 import type { FormSubmitEvent } from "@nuxt/ui";
 
 useHead({
@@ -18,6 +26,43 @@ const { data: companyProfile } = await useAPI<Company[]>("/api/companies", {
 
 const { data: industries } = await useAPI<PaginationResponse<Industry>>(
   "/api/industries",
+  {
+    method: "GET",
+    query: {
+      size: 1000,
+    },
+  }
+);
+
+const { data: contractTypes } = await useAPI<ContractType[]>(
+  "/api/contract-types",
+  {
+    method: "GET",
+    query: {
+      size: 1000,
+    },
+  }
+);
+
+const { data: workloadTypes } = await useAPI<WorkloadType[]>(
+  "/api/workload-types",
+  {
+    method: "GET",
+    query: {
+      size: 1000,
+    },
+  }
+);
+
+const { data: workModeTypes } = await useAPI<WorkMode[]>("/api/work-modes", {
+  method: "GET",
+  query: {
+    size: 1000,
+  },
+});
+
+const { data: paymentTypes } = await useAPI<PaymentType[]>(
+  "/api/payment-types",
   {
     method: "GET",
     query: {
@@ -55,6 +100,17 @@ const postJobSchema = z
 
     is_cv_required: z.boolean(),
 
+    contract_type: z
+      .number("Contract type is required")
+      .int("Contract type is required"),
+    work_mode: z.number("Work mode is required").int("Work mode is required"),
+    payment_type: z
+      .number("Payment type is required")
+      .int("Payment type is required"),
+    workload_type: z
+      .number("Workload type is required")
+      .int("Workload type is required"),
+
     address: z.string().optional(),
     city: z.string().optional(),
     country: z.string().optional(),
@@ -81,6 +137,11 @@ const state = reactive<Partial<z.output<typeof postJobSchema>>>({
   industryId: undefined,
 
   is_cv_required: true,
+
+  contract_type: undefined,
+  work_mode: undefined,
+  payment_type: undefined,
+  workload_type: undefined,
 
   address: company.value?.address || user.value?.address || "",
   city: company.value?.city || user.value?.city || "",
@@ -162,17 +223,53 @@ async function onSubmit(
 
       <!-- TO DO: workload, contract_type, ... -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <UFormField size="xl">
-          <USelect class="w-full" />
+        <UFormField
+          v-if="workloadTypes"
+          size="xl"
+          label="Workload Type"
+          name="workload_type"
+        >
+          <USelect
+            v-model="state.workload_type"
+            class="w-full"
+            :items="mapToOptions(workloadTypes, workloadTypeLabels)"
+          />
         </UFormField>
-        <UFormField size="xl">
-          <USelect class="w-full" />
+        <UFormField
+          v-if="contractTypes"
+          size="xl"
+          label="Contract Type"
+          name="contract_type"
+        >
+          <USelect
+            v-model="state.contract_type"
+            class="w-full"
+            :items="mapToOptions(contractTypes, contractTypeLabels)"
+          />
         </UFormField>
-        <UFormField size="xl">
-          <USelect class="w-full" />
+        <UFormField
+          v-if="workModeTypes"
+          size="xl"
+          label="Work Mode"
+          name="work_mode"
+        >
+          <USelect
+            v-model="state.work_mode"
+            class="w-full"
+            :items="mapToOptions(workModeTypes, workModeLabels)"
+          />
         </UFormField>
-        <UFormField size="xl">
-          <USelect class="w-full" />
+        <UFormField
+          v-if="paymentTypes"
+          size="xl"
+          label="Payment"
+          name="payment_type"
+        >
+          <USelect
+            v-model="state.payment_type"
+            class="w-full"
+            :items="mapToOptions(paymentTypes, paymentTypeLabels)"
+          />
         </UFormField>
       </div>
 

@@ -1,11 +1,7 @@
 package com.nextjob.configs;
 
-import com.nextjob.entities.Industry;
-import com.nextjob.entities.Role;
-import com.nextjob.entities.User;
-import com.nextjob.repositories.IndustryRepository;
-import com.nextjob.repositories.RoleRepository;
-import com.nextjob.repositories.UserRepository;
+import com.nextjob.entities.*;
+import com.nextjob.repositories.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -21,6 +17,15 @@ public class DataInitializer implements CommandLineRunner {
     private BCryptPasswordEncoder passwordEncoder;
     @Autowired
     private IndustryRepository industryRepository;
+    @Autowired
+    private ContractTypeRepository contractTypeRepo;
+    @Autowired
+    private WorkloadTypeRepository workloadTypeRepo;
+    @Autowired
+    private WorkModeRepository workModeRepo;
+    @Autowired
+    private PaymentTypeRepository paymentTypeRepo;
+
 
     @Override
     public void run(String... args) {
@@ -56,6 +61,35 @@ public class DataInitializer implements CommandLineRunner {
                 industryRepository.save(new Industry("Construction"));
                 industryRepository.save(new Industry("Healthcare"));
                 industryRepository.save(new Industry("Marketing"));
+            }
+
+            // conract_types
+            if (contractTypeRepo.count() == 0) {
+                contractTypeRepo.save(new ContractType("b2b"));
+                contractTypeRepo.save(new ContractType("employment_contract"));
+                contractTypeRepo.save(new ContractType("mandate_contract"));
+                contractTypeRepo.save(new ContractType("specific_task_contract"));
+                contractTypeRepo.save(new ContractType("internship_contract"));
+                contractTypeRepo.save(new ContractType("other"));
+            }
+
+            if (workloadTypeRepo.count() == 0) {
+                workloadTypeRepo.save(new WorkloadType("full_time"));
+                workloadTypeRepo.save(new WorkloadType("part_time"));
+                workloadTypeRepo.save(new WorkloadType("temporary"));
+                workloadTypeRepo.save(new WorkloadType("internship"));
+            }
+
+            if (workModeRepo.count() == 0) {
+                workModeRepo.save(new WorkMode("remote"));
+                workModeRepo.save(new WorkMode("on_site"));
+                workModeRepo.save(new WorkMode("hybrid"));
+            }
+
+            if (paymentTypeRepo.count() == 0) {
+                paymentTypeRepo.save(new PaymentType("hourly"));
+                paymentTypeRepo.save(new PaymentType("weekly"));
+                paymentTypeRepo.save(new PaymentType("monthly"));
             }
         }
 
