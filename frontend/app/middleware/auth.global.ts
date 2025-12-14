@@ -1,3 +1,5 @@
+import { AuthRole } from "~/types";
+
 export default defineNuxtRouteMiddleware(async to => {
   const { user, fetchUser } = useAuth();
 
@@ -10,7 +12,7 @@ export default defineNuxtRouteMiddleware(async to => {
   const isAdminRoute = to.path.startsWith("/admin");
 
   if (isAdminRoute) {
-    if (!user.value || user.value.role !== "ADMIN") {
+    if (!user.value || user.value.role !== AuthRole.ADMIN) {
       return createError({
         statusCode: 404,
         statusMessage: "Page not found: " + to.path,

@@ -6,6 +6,7 @@ import com.nextjob.entities.Company;
 public class CompanyMapper {
     public static CompanyDto toDto(Company company) {
         return new CompanyDto(
+                company.getId(),
                 company.getName(),
                 company.getDescription(),
                 company.getEmail(),

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { User } from "~/types";
+import { AuthRole, type User } from "~/types";
 import type { TableColumn } from "@nuxt/ui";
 
 const { data: users, status, refresh } = await useAPI<User[]>("/api/users");
@@ -89,7 +89,7 @@ const columns: TableColumn<User>[] = [
             color: "neutral",
             variant: "ghost",
             class: "text-red-400 cursor-pointer",
-            disabled: userRow.role === "ADMIN",
+            disabled: userRow.role === AuthRole.ADMIN,
             "aria-label": "Actions dropdown",
             onClick: () => deleteUser(Number(userRow.id)),
           },

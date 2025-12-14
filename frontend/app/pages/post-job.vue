@@ -4,6 +4,7 @@ import type {
   Company,
   ContractType,
   Industry,
+  JobAnnouncement,
   PaginationResponse,
   PaymentType,
   WorkloadType,
@@ -87,27 +88,27 @@ const postJobSchema = z
         `Description must be at most ${DESC_MAX_SIZE} characters long`
       ),
 
-    salary_min: z
+    salaryMin: z
       .number()
       .min(0, "Minimum salary cannot be negative")
       .optional(),
-    salary_max: z
+    salaryMax: z
       .number()
       .min(0, "Maximum salary cannot be negative")
       .optional(),
 
     industryId: z.number("Industry is required").int("Industry is required"),
 
-    is_cv_required: z.boolean(),
+    isCvRequired: z.boolean(),
 
-    contract_type: z
+    contractTypeId: z
       .number("Contract type is required")
       .int("Contract type is required"),
-    work_mode: z.number("Work mode is required").int("Work mode is required"),
-    payment_type: z
+    workModeId: z.number("Work mode is required").int("Work mode is required"),
+    paymentTypeId: z
       .number("Payment type is required")
       .int("Payment type is required"),
-    workload_type: z
+    workloadTypeId: z
       .number("Workload type is required")
       .int("Workload type is required"),
 
@@ -117,31 +118,31 @@ const postJobSchema = z
   })
   .refine(
     data =>
-      data.salary_min === undefined ||
-      data.salary_max === undefined ||
-      data.salary_min <= data.salary_max,
+      data.salaryMin === undefined ||
+      data.salaryMax === undefined ||
+      data.salaryMin <= data.salaryMax,
     {
       message: "Minimum salary cannot be greater than maximum salary",
-      path: ["salary_max"],
+      path: ["salaryMax"],
     }
   );
 
 const state = reactive<Partial<z.output<typeof postJobSchema>>>({
-  asCompany: !!company.value,
+  asCompany: false,
   title: "",
   description: "",
 
-  salary_min: undefined,
-  salary_max: undefined,
+  salaryMin: undefined,
+  salaryMax: undefined,
 
   industryId: undefined,
 
-  is_cv_required: true,
+  isCvRequired: true,
 
-  contract_type: undefined,
-  work_mode: undefined,
-  payment_type: undefined,
-  workload_type: undefined,
+  contractTypeId: undefined,
+  workModeId: undefined,
+  paymentTypeId: undefined,
+  workloadTypeId: undefined,
 
   address: company.value?.address || user.value?.address || "",
   city: company.value?.city || user.value?.city || "",
@@ -163,10 +164,69 @@ watch(
   }
 );
 
+watch(
+  company,
+  newVal => {
+    state.asCompany = !!newVal;
+  },
+  { immediate: true }
+);
+
+const toast = useToast();
+const loading = ref(false);
+
 async function onSubmit(
   event: FormSubmitEvent<z.output<typeof postJobSchema>>
 ) {
-  console.log("Form submitted:", event.data);
+  loading.value = true;
+
+  const { error } = await useAPI<JobAnnouncement>(`/api/job-announcements`, {
+    method: "POST",
+    body: {
+      ...event.data,
+      companyId: event.data.asCompany ? company.value?.id : null,
+      salaryMin: event.data.salaryMin ? event.data.salaryMin * 100 : undefined,
+      salaryMax: event.data.salaryMax ? event.data.salaryMax * 100 : undefined,
+    },
+  });
+
+  if (error.value) {
+    toast.add({
+      title: "Error creating job announcement",
+      color: "error",
+    });
+    loading.value = false;
+    return;
+  }
+
+  toast.add({
+    title: "Job announcement created successfully",
+    color: "success",
+  });
+  loading.value = false;
+
+  // Reset form
+  Object.assign(state, {
+    asCompany: !!company.value,
+    title: "",
+    description: "",
+
+    salaryMin: undefined,
+    salaryMax: undefined,
+
+    industryId: undefined,
+
+    isCvRequired: true,
+
+    contractTypeId: undefined,
+    workModeId: undefined,
+    paymentTypeId: undefined,
+    workloadTypeId: undefined,
+
+    address: company.value?.address || user.value?.address || "",
+    city: company.value?.city || user.value?.city || "",
+    country: company.value?.country || user.value?.country || "",
+  });
 }
 </script>
 
@@ -190,14 +250,20 @@ async function onSubmit(
     >
       <USwitch
         v-model="state.asCompany"
+        :disabled="!company"
         :label="`Post as ${state.asCompany ? 'a company' : 'an individual'}`"
-        class="mb-8"
+        class="mb-4"
         size="xl"
       />
 
+      <p v-if="!company" class="mb-8 text-gray-400">
+        If you want to post this job announcement as a company, please create a
+        company profile first.
+      </p>
+
       <USwitch
-        v-model="state.is_cv_required"
-        :label="`CV is ${state.is_cv_required ? 'required' : 'not required'}`"
+        v-model="state.isCvRequired"
+        :label="`CV is ${state.isCvRequired ? 'required' : 'not required'}`"
         class="mb-8"
         size="xl"
       />
@@ -227,10 +293,10 @@ async function onSubmit(
           v-if="workloadTypes"
           size="xl"
           label="Workload Type"
-          name="workload_type"
+          name="workloadTypeId"
         >
           <USelect
-            v-model="state.workload_type"
+            v-model="state.workloadTypeId"
             class="w-full"
             :items="mapToOptions(workloadTypes, workloadTypeLabels)"
           />
@@ -239,10 +305,10 @@ async function onSubmit(
           v-if="contractTypes"
           size="xl"
           label="Contract Type"
-          name="contract_type"
+          name="contractTypeId"
         >
           <USelect
-            v-model="state.contract_type"
+            v-model="state.contractTypeId"
             class="w-full"
             :items="mapToOptions(contractTypes, contractTypeLabels)"
           />
@@ -251,10 +317,10 @@ async function onSubmit(
           v-if="workModeTypes"
           size="xl"
           label="Work Mode"
-          name="work_mode"
+          name="workModeId"
         >
           <USelect
-            v-model="state.work_mode"
+            v-model="state.workModeId"
             class="w-full"
             :items="mapToOptions(workModeTypes, workModeLabels)"
           />
@@ -263,10 +329,10 @@ async function onSubmit(
           v-if="paymentTypes"
           size="xl"
           label="Payment"
-          name="payment_type"
+          name="paymentTypeId"
         >
           <USelect
-            v-model="state.payment_type"
+            v-model="state.paymentTypeId"
             class="w-full"
             :items="mapToOptions(paymentTypes, paymentTypeLabels)"
           />
@@ -275,9 +341,9 @@ async function onSubmit(
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <FormsNumberField
-          v-model="state.salary_min"
+          v-model="state.salaryMin"
           label="Minimum Salary"
-          name="salary_min"
+          name="salaryMin"
           :step="5"
           :step-snapping="false"
           :is-currency="true"
@@ -286,9 +352,9 @@ async function onSubmit(
         />
 
         <FormsNumberField
-          v-model="state.salary_max"
+          v-model="state.salaryMax"
           label="Maximum Salary"
-          name="salary_max"
+          name="salaryMax"
           :step="5"
           :step-snapping="false"
           :is-currency="true"

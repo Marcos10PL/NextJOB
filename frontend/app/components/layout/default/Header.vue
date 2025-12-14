@@ -1,4 +1,6 @@
 <script lang="ts" setup>
+import { AuthRole } from "~/types";
+
 const { user } = useAuth();
 </script>
 
@@ -14,7 +16,7 @@ const { user } = useAuth();
 
     <template #right>
       <div class="flex items-center sm:gap-x-2 *:w-10 *:flex *:justify-center">
-        <NavAdminButton v-if="user && user.role === 'ADMIN'" />
+        <NavAdminButton v-if="user && user.role === AuthRole.ADMIN" />
 
         <NavPostButton v-if="user" />
         <NavSettingsButton v-if="user" />

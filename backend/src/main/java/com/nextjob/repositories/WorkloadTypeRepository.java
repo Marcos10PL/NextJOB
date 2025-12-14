@@ -3,4 +3,4 @@ package com.nextjob.repositories;
 import com.nextjob.entities.WorkloadType;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface WorkloadTypeRepository extends JpaRepository<WorkloadType, Long> {}
+public interface WorkloadTypeRepository extends JpaRepository<WorkloadType, Integer> {}
