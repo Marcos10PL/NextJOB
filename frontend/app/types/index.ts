@@ -3,7 +3,7 @@ export type FetchError = {
   message: string;
 };
 
-enum AuthRole {
+export enum AuthRole {
   ADMIN = "ADMIN",
   USER = "USER",
 }
