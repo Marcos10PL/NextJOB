@@ -1,3 +1,5 @@
+import type { WorkModeEnum } from "~/types";
+
 export interface Option {
   value: number;
   label: string;
@@ -19,7 +21,7 @@ export const workloadTypeLabels: Record<string, string> = {
   internship: "Internship",
 };
 
-export const workModeLabels: Record<string, string> = {
+export const workModeLabels: Record<WorkModeEnum, string> = {
   remote: "Remote",
   on_site: "On Site",
   hybrid: "Hybrid",

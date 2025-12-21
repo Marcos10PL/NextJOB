@@ -22,6 +22,8 @@ const state = reactive({
   password: "user1234",
 });
 
+const router = useRouter();
+
 const onSubmit = async (
   event: FormSubmitEvent<z.output<typeof loginSchema>>
 ) => {
@@ -40,10 +42,11 @@ const onSubmit = async (
     success.value = true;
 
     toast.add({ title: "Login Successful" });
+    router.push("/announcements");
     close();
   } catch (err) {
+    console.error(err);
     error.value = (err as FetchError).status || 500;
-    // console.error(err);
   } finally {
     loading.value = false;
   }

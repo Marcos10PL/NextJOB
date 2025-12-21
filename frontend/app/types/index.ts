@@ -96,3 +96,101 @@ export type JobAnnouncement = {
   created_at: string;
   updated_at: string;
 };
+
+export type JobAnnouncementListItem = {
+  id: number;
+  title: string;
+  city: string | null;
+  country: string | null;
+  salaryMin: number;
+  salaryMax: number;
+  authorId: number | null;
+  authorName: string | null;
+  companyId: number | null;
+  companyName: string | null;
+  industryName: string;
+  contractType: string;
+  workloadType: string;
+  workMode: string;
+  paymentType: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+type JobAnnouncementFilterBase = {
+  title?: string;
+  industryIds?: string[];
+  contractTypeIds?: string[];
+  workloadTypeIds?: string[];
+  workModeIds?: string[];
+  paymentTypeIds?: string[];
+  salaryMin?: number;
+  salaryMax?: number;
+  city?: string;
+  country?: string;
+  isCvRequired?: boolean;
+};
+
+export type JobAnnouncementFilterDebounced = Pick<
+  JobAnnouncementFilterBase,
+  "title" | "country" | "city" | "salaryMin" | "salaryMax"
+>;
+
+export type JobAnnouncementFilter = Omit<
+  JobAnnouncementFilterBase,
+  keyof JobAnnouncementFilterDebounced
+>;
+
+export enum JobSort {
+  CREATED_AT_DESC = "createdAt,desc",
+  CREATED_AT_ASC = "createdAt,asc",
+  UPDATED_AT_DESC = "updatedAt,desc",
+  UPDATED_AT_ASC = "updatedAt,asc",
+}
+
+export enum WorkModeEnum {
+  REMOTE = "remote",
+  ONSITE = "on_site",
+  HYBRID = "hybrid",
+}
+
+export type Author = {
+  id: number;
+  fullName: string;
+  email: string;
+  address?: string | null;
+  city?: string | null;
+  country?: string | null;
+};
+
+export type CompanyDetails = {
+  id: number;
+  name: string;
+  description?: string | null;
+  email: string;
+  website?: string | null;
+  industryName?: string | null;
+  address?: string | null;
+  city?: string | null;
+  country?: string | null;
+};
+
+export type JobAnnouncementDetailsResponse = {
+  id: number;
+  title: string;
+  description: string;
+  salaryMin: number;
+  salaryMax: number;
+  isCvRequired: boolean;
+  city?: string | null;
+  country?: string | null;
+  address?: string | null;
+  updatedAt: string;
+  industryName: string;
+  contractTypeName: string;
+  workloadTypeName: string;
+  workModeName: string;
+  paymentTypeName: string;
+  company?: CompanyDetails | null;
+  author?: Author | null;
+};

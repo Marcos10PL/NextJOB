@@ -1,14 +1,15 @@
 <script setup lang="ts">
 import z from "zod";
-import type {
-  Company,
-  ContractType,
-  Industry,
-  JobAnnouncement,
-  PaginationResponse,
-  PaymentType,
-  WorkloadType,
-  WorkMode,
+import {
+  WorkModeEnum,
+  type Company,
+  type ContractType,
+  type Industry,
+  type JobAnnouncement,
+  type PaginationResponse,
+  type PaymentType,
+  type WorkloadType,
+  type WorkMode,
 } from "~/types";
 import type { FormSubmitEvent } from "@nuxt/ui";
 
@@ -74,6 +75,14 @@ const { data: paymentTypes } = await useAPI<PaymentType[]>(
 
 const company = computed(() => companyProfile.value?.[0] || null);
 
+const isRemote = computed(() => {
+  const remote = workModeTypes?.value?.find(
+    w => w.name === WorkModeEnum.REMOTE
+  );
+
+  return state.workModeId === remote?.id;
+});
+
 const DESC_MAX_SIZE = 500;
 
 const postJobSchema = z
@@ -89,13 +98,11 @@ const postJobSchema = z
       ),
 
     salaryMin: z
-      .number()
-      .min(0, "Minimum salary cannot be negative")
-      .optional(),
+      .number("Minimum salary is required")
+      .min(0, "Minimum salary cannot be negative"),
     salaryMax: z
-      .number()
-      .min(0, "Maximum salary cannot be negative")
-      .optional(),
+      .number("Minimum salary is required")
+      .min(0, "Maximum salary cannot be negative"),
 
     industryId: z.number("Industry is required").int("Industry is required"),
 
@@ -156,10 +163,12 @@ watch(
       state.address = company.value?.address || user.value?.address || "";
       state.city = company.value?.city || user.value?.city || "";
       state.country = company.value?.country || user.value?.country || "";
+      state.industryId = company.value?.industryId || undefined;
     } else {
       state.address = user.value?.address || "";
       state.city = user.value?.city || "";
       state.country = user.value?.country || "";
+      state.industryId = undefined;
     }
   }
 );
@@ -172,12 +181,31 @@ watch(
   { immediate: true }
 );
 
+watch(isRemote, remote => {
+  if (remote) {
+    state.address = undefined;
+    state.city = undefined;
+    state.country = undefined;
+  }
+});
+
 const toast = useToast();
 const loading = ref(false);
 
 async function onSubmit(
   event: FormSubmitEvent<z.output<typeof postJobSchema>>
 ) {
+  if (!isRemote.value) {
+    if (!state.address || !state.city || !state.country) {
+      toast.add({
+        title:
+          "Location is required for non-remote jobs. Please fill it out or mark the job as remote.",
+        color: "info",
+      });
+      return;
+    }
+  }
+
   loading.value = true;
 
   const { error } = await useAPI<JobAnnouncement>(`/api/job-announcements`, {
@@ -214,7 +242,7 @@ async function onSubmit(
     salaryMin: undefined,
     salaryMax: undefined,
 
-    industryId: undefined,
+    industryId: company.value?.industryId || undefined,
 
     isCvRequired: true,
 
@@ -287,7 +315,6 @@ async function onSubmit(
         size="xl"
       />
 
-      <!-- TO DO: workload, contract_type, ... -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <UFormField
           v-if="workloadTypes"
@@ -344,7 +371,7 @@ async function onSubmit(
           v-model="state.salaryMin"
           label="Minimum Salary"
           name="salaryMin"
-          :step="5"
+          :step="100"
           :step-snapping="false"
           :is-currency="true"
           size="xl"
@@ -355,7 +382,7 @@ async function onSubmit(
           v-model="state.salaryMax"
           label="Maximum Salary"
           name="salaryMax"
-          :step="5"
+          :step="100"
           :step-snapping="false"
           :is-currency="true"
           size="xl"
@@ -363,7 +390,17 @@ async function onSubmit(
         />
       </div>
 
-      <UFormField label="Industry" name="industryId" class="w-full" size="xl">
+      <UFormField
+        label="Industry"
+        name="industryId"
+        class="w-full"
+        size="xl"
+        :description="
+          state.asCompany && state.industryId !== company?.industryId
+            ? 'Your company industry is different. Make sure this is correct.'
+            : ''
+        "
+      >
         <USelect
           v-model="state.industryId"
           class="w-full"
@@ -379,18 +416,20 @@ async function onSubmit(
 
       <FormsSeparator class="!text-base">
         The location has been loaded from your
-        {{ state.asCompany ? "company" : "personal" }} profile. You can edit it,
-        or leave it blank if the job is remote.
+        {{ state.asCompany ? "company" : "personal" }} profile (if available).
+        Feel free to modify it.
+        <br >
+        Location is required unless the job is remote.
       </FormsSeparator>
 
       <UFormField label="Address" name="address" size="xl">
-        <UInput v-model="state.address" class="w-full" />
+        <UInput v-model="state.address" class="w-full" :disabled="isRemote" />
       </UFormField>
       <UFormField label="City" name="city" size="xl">
-        <UInput v-model="state.city" class="w-full" />
+        <UInput v-model="state.city" class="w-full" :disabled="isRemote" />
       </UFormField>
       <UFormField label="Country" name="country" size="xl">
-        <UInput v-model="state.country" class="w-full" />
+        <UInput v-model="state.country" class="w-full" :disabled="isRemote" />
       </UFormField>
 
       <UButton type="submit"> Create </UButton>

@@ -1,11 +1,20 @@
 package com.nextjob.services;
 
 import com.nextjob.dtos.JobAnnouncementCreateRequest;
+import com.nextjob.dtos.JobAnnouncementDetailsResponse;
+import com.nextjob.dtos.JobAnnouncementFilter;
+import com.nextjob.dtos.JobAnnouncementListResponse;
 import com.nextjob.entities.JobAnnouncement;
 import com.nextjob.entities.User;
+import com.nextjob.mappers.JobAnnouncementDetailsMapper;
+import com.nextjob.mappers.JobAnnouncementMapper;
 import com.nextjob.repositories.*;
-import jakarta.transaction.Transactional;
+import com.nextjob.specifications.JobAnnouncementSpecification;
+import jakarta.persistence.EntityNotFoundException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Transactional
@@ -65,5 +74,27 @@ public class JobAnnouncementService {
         }
 
         return jobRepo.save(job).getId();
+    }
+
+    public Page<JobAnnouncementListResponse> listDto(
+            JobAnnouncementFilter filter,
+            Pageable pageable
+    ) {
+        return jobRepo
+                .findAll(
+                        JobAnnouncementSpecification.withFilters(filter),
+                        pageable
+                )
+                .map(JobAnnouncementMapper::toListDto);
+    }
+
+    @Transactional(readOnly = true)
+    public JobAnnouncementDetailsResponse getDetails(Integer id) {
+        JobAnnouncement job = jobRepo.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "Job announcement not found: " + id
+                ));
+
+        return JobAnnouncementDetailsMapper.toDetailsDto(job);
     }
 }
