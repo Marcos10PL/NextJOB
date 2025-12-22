@@ -1,5 +1,7 @@
 # NextJOB
 
+(still under development)
+
 The NextJOB is a job board application designed to connect job seekers with employers. It features a user-friendly interface for browsing and applying for jobs, as well as tools for employers to post job listings and manage applications.
 
 ## Stack
