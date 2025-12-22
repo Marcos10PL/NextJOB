@@ -1,8 +1,10 @@
 <script setup lang="ts">
-import z from "zod";
+import type z from "zod";
 import type { FormSubmitEvent } from "@nuxt/ui";
 import type { Company, Industry, PaginationResponse } from "~/types";
 import deepEqual from "fast-deep-equal";
+import { companyProfileSchema } from "~/schemas";
+import { COMPANY_DESC_MAX_SIZE } from "~/constants"
 
 useHead({
   title: "Company Profile",
@@ -30,34 +32,14 @@ const { data: companyProfile, status: companyProfileStatus } = await useAPI<
   },
 });
 
-const DESC_MAX_SIZE = 500;
+const schema = companyProfileSchema;
 
-const CompanyProfileSchema = z.object({
-  name: z
-    .string()
-    .min(2, "Name must be at least 2 characters long")
-    .max(100, "Name must be at most 100 characters long"),
-  description: z
-    .string()
-    .min(8, "Description must be at least 8 characters long")
-    .max(
-      DESC_MAX_SIZE,
-      `Description must be at most ${DESC_MAX_SIZE} characters long`
-    ),
-
-  email: z.email("Invalid email address"),
-  website: z.url("Invalid website URL").or(z.literal("")),
-  industryId: z.number("Industry is required").int("Industry is required"),
-  
-  address: z.string().optional(),
-  city: z.string().optional(),
-  country: z.string().optional(),
-});
+type Schema = z.output<typeof companyProfileSchema>;
 
 const company = computed(() => companyProfile.value?.[0] || null);
 const isCompanyExists = ref(!!company.value);
 
-const state = reactive<Partial<z.output<typeof CompanyProfileSchema>>>({
+const state = reactive<Partial<Schema>>({
   email: company.value?.email || user.value?.email || "",
   name: company.value?.name || "",
   description: company.value?.description || "",
@@ -79,9 +61,7 @@ watch(
 
 const loading = ref(false);
 
-async function onSubmit(
-  event: FormSubmitEvent<z.output<typeof CompanyProfileSchema>>
-) {
+async function onSubmit(event: FormSubmitEvent<Schema>) {
   const hasChanges = !deepEqual(event.data, company.value);
 
   if (!hasChanges) {
@@ -145,12 +125,7 @@ async function onSubmit(
 
 <template>
   <NuxtLayout name="settings">
-    <UForm
-      :schema="CompanyProfileSchema"
-      :state="state"
-      class="space-y-6"
-      @submit="onSubmit"
-    >
+    <UForm :schema="schema" :state="state" class="space-y-6" @submit="onSubmit">
       <div class="flex flex-col gap-8 max-w-xl *:w-full">
         <FormsHeader>
           When you post a job announcement as a company, the information from
@@ -174,7 +149,7 @@ async function onSubmit(
 
         <FormsTextarea
           v-model="state.description"
-          :max-size="DESC_MAX_SIZE"
+          :max-size="COMPANY_DESC_MAX_SIZE"
           :rows="5"
           label="Description"
           name="description"

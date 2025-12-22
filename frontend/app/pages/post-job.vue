@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import z from "zod";
+import type z from "zod";
 import {
   WorkModeEnum,
   type Company,
@@ -12,6 +12,14 @@ import {
   type WorkMode,
 } from "~/types";
 import type { FormSubmitEvent } from "@nuxt/ui";
+import { postJobSchema } from "~/schemas";
+import {
+  contractTypeLabels,
+  paymentTypeLabels,
+  POST_JOB_DESC_MAX_SIZE,
+  workloadTypeLabels,
+  workModeLabels,
+} from "~/constants";
 
 useHead({
   title: "Post a Job",
@@ -83,58 +91,11 @@ const isRemote = computed(() => {
   return state.workModeId === remote?.id;
 });
 
-const DESC_MAX_SIZE = 500;
+const schema = postJobSchema;
 
-const postJobSchema = z
-  .object({
-    asCompany: z.boolean(),
-    title: z.string().min(5, "Title must be at least 5 characters long"),
-    description: z
-      .string()
-      .min(8, "Description must be at least 8 characters long")
-      .max(
-        DESC_MAX_SIZE,
-        `Description must be at most ${DESC_MAX_SIZE} characters long`
-      ),
+type Schema = z.output<typeof schema>;
 
-    salaryMin: z
-      .number("Minimum salary is required")
-      .min(0, "Minimum salary cannot be negative"),
-    salaryMax: z
-      .number("Minimum salary is required")
-      .min(0, "Maximum salary cannot be negative"),
-
-    industryId: z.number("Industry is required").int("Industry is required"),
-
-    isCvRequired: z.boolean(),
-
-    contractTypeId: z
-      .number("Contract type is required")
-      .int("Contract type is required"),
-    workModeId: z.number("Work mode is required").int("Work mode is required"),
-    paymentTypeId: z
-      .number("Payment type is required")
-      .int("Payment type is required"),
-    workloadTypeId: z
-      .number("Workload type is required")
-      .int("Workload type is required"),
-
-    address: z.string().optional(),
-    city: z.string().optional(),
-    country: z.string().optional(),
-  })
-  .refine(
-    data =>
-      data.salaryMin === undefined ||
-      data.salaryMax === undefined ||
-      data.salaryMin <= data.salaryMax,
-    {
-      message: "Minimum salary cannot be greater than maximum salary",
-      path: ["salaryMax"],
-    }
-  );
-
-const state = reactive<Partial<z.output<typeof postJobSchema>>>({
+const state = reactive<Partial<Schema>>({
   asCompany: false,
   title: "",
   description: "",
@@ -192,9 +153,7 @@ watch(isRemote, remote => {
 const toast = useToast();
 const loading = ref(false);
 
-async function onSubmit(
-  event: FormSubmitEvent<z.output<typeof postJobSchema>>
-) {
+async function onSubmit(event: FormSubmitEvent<Schema>) {
   if (!isRemote.value) {
     if (!state.address || !state.city || !state.country) {
       toast.add({
@@ -270,12 +229,7 @@ async function onSubmit(
       </p>
     </header>
 
-    <UForm
-      :schema="postJobSchema"
-      :state="state"
-      class="space-y-6"
-      @submit="onSubmit"
-    >
+    <UForm :schema="schema" :state="state" class="space-y-6" @submit="onSubmit">
       <USwitch
         v-model="state.asCompany"
         :disabled="!company"
@@ -306,7 +260,7 @@ async function onSubmit(
 
       <FormsTextarea
         v-model="state.description"
-        :max-size="DESC_MAX_SIZE"
+        :max-size="POST_JOB_DESC_MAX_SIZE"
         :rows="5"
         label="Description"
         name="description"
@@ -418,7 +372,7 @@ async function onSubmit(
         The location has been loaded from your
         {{ state.asCompany ? "company" : "personal" }} profile (if available).
         Feel free to modify it.
-        <br >
+        <br />
         Location is required unless the job is remote.
       </FormsSeparator>
 

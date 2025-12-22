@@ -18,6 +18,6 @@ export const useAPI = <T>(
   return useFetch<T>(url, {
     ...options,
     headers: headers.value,
-    baseURL: useRuntimeConfig().apiUrl,
+    baseURL: process.env.API_BASE_URL || "http://localhost:3000",
   });
 };

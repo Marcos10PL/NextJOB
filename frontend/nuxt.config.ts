@@ -9,7 +9,4 @@ export default defineNuxtConfig({
   vite: {
     plugins: [tailwindcss()],
   },
-  runtimeConfig: {
-    apiUrl: process.env.API_URL || "http://localhost:8080",
-  },
 });

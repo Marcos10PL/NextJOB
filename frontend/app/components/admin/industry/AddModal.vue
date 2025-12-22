@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import * as z from "zod";
+import type z from "zod";
 import type { FormSubmitEvent } from "@nuxt/ui";
 import type { Industry } from "~/types";
+import { industryNameSchema } from "~/schemas";
 
 const { refreshIndustries, industryToEdit = null } = defineProps<{
   refreshIndustries: () => Promise<void>;
@@ -16,9 +17,7 @@ watch(
 );
 const modal = defineModel<boolean>("modal");
 
-const schema = z.object({
-  name: z.string().min(2, "Name should be at least 2 characters long"),
-});
+const schema = industryNameSchema;
 
 const toast = useToast();
 

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { FormSubmitEvent } from "@nuxt/ui";
-import z from "zod";
+import type z from "zod";
+import { loginSchema } from "~/schemas";
 import type { FetchError } from "~/types";
 
 const loading = ref(false);
@@ -12,21 +13,18 @@ const { setSession, fetchUser } = useAuth();
 const toast = useToast();
 const { close } = useAuthModal();
 
-const loginSchema = z.object({
-  email: z.email("Invalid email address"),
-  password: z.string().min(8, "Password must be at least 8 characters long"),
-});
+const schema = loginSchema;
 
-const state = reactive({
+type Schema = z.output<typeof schema>;
+
+const state = reactive<Schema>({
   email: "user@example.com",
   password: "user1234",
 });
 
 const router = useRouter();
 
-const onSubmit = async (
-  event: FormSubmitEvent<z.output<typeof loginSchema>>
-) => {
+const onSubmit = async (event: FormSubmitEvent<Schema>) => {
   try {
     loading.value = true;
     error.value = null;
@@ -56,7 +54,7 @@ const onSubmit = async (
 <template>
   <UForm
     class="min-w-full flex flex-col gap-4 items-center justify-center rounded-lg"
-    :schema="loginSchema"
+    :schema="schema"
     :state="state"
     @submit="onSubmit"
   >

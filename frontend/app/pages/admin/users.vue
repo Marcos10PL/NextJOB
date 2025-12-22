@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { AuthRole, type User } from "~/types";
+import type { User } from "~/types";
 import type { TableColumn } from "@nuxt/ui";
 
-const { data: users, status, refresh } = await useAPI<User[]>("/api/users");
+const { data: users, status } = await useAPI<User[]>("/api/users");
 
-const toast = useToast();
+// const toast = useToast();
 
 const { user } = useAuth();
 
@@ -18,28 +18,28 @@ const parseDate = (dateStr: string) => {
   });
 };
 
-const UButton = resolveComponent("UButton");
+// const UButton = resolveComponent("UButton");
 
-const deleteUser = async (userId: number) => {
-  const { execute, error } = useAPI(`/api/users/${userId}`, {
-    method: "DELETE",
-    immediate: false,
-  });
+// const deleteUser = async (userId: number) => {
+//   const { execute, error } = useAPI(`/api/users/${userId}`, {
+//     method: "DELETE",
+//     immediate: false,
+//   });
 
-  await execute();
+//   await execute();
 
-  if (error.value) {
-    console.error(error.value);
-    toast.add({
-      title: "Error deleting user",
-      color: "error",
-    });
-    return;
-  }
+//   if (error.value) {
+//     console.error(error.value);
+//     toast.add({
+//       title: "Error deleting user",
+//       color: "error",
+//     });
+//     return;
+//   }
 
-  toast.add({ title: "User Deleted" });
-  await refresh();
-};
+//   toast.add({ title: "User Deleted" });
+//   await refresh();
+// };
 
 const columns: TableColumn<User>[] = [
   {
@@ -76,28 +76,28 @@ const columns: TableColumn<User>[] = [
       return parseDate(row.getValue("createdAt"));
     },
   },
-  {
-    accessorKey: "",
-    header: "Actions",
-    cell: ({ row }) => {
-      const userRow = row.original;
+  // {
+  //   accessorKey: "",
+  //   header: "Actions",
+  //   cell: ({ row }) => {
+  //     const userRow = row.original;
 
-      return h("div", [
-        h(
-          UButton,
-          {
-            color: "neutral",
-            variant: "ghost",
-            class: "text-red-400 cursor-pointer",
-            disabled: userRow.role === AuthRole.ADMIN,
-            "aria-label": "Actions dropdown",
-            onClick: () => deleteUser(Number(userRow.id)),
-          },
-          "Delete"
-        ),
-      ]);
-    },
-  },
+  //     return h("div", [
+  //       h(
+  //         UButton,
+  //         {
+  //           color: "neutral",
+  //           variant: "ghost",
+  //           class: "text-red-400 cursor-pointer",
+  //           disabled: userRow.role === AuthRole.ADMIN,
+  //           "aria-label": "Actions dropdown",
+  //           onClick: () => deleteUser(Number(userRow.id)),
+  //         },
+  //         "Delete"
+  //       ),
+  //     ]);
+  //   },
+  // },
 ];
 </script>
 

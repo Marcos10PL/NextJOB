@@ -6,7 +6,12 @@ const router = useRouter();
 const signOut = async () => {
   clearSession();
   toast.add({ title: "Logged out successfully" });
+
   router.push("/");
+
+  setTimeout(() => {
+    location.reload();
+  }, 300);
 };
 </script>
 

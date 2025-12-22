@@ -35,18 +35,15 @@ public class JobAnnouncementDetailsMapper {
                         job.getCompany().getAddress(),
                         job.getCompany().getCity(),
                         job.getCompany().getCountry()
-                )
-                        : null,
-                job.getCompany() == null
-                        ? new AuthorDto(
-                        job.getAuthor().getId(),
-                        job.getAuthor().getFullName(),
-                        job.getAuthor().getEmail(),
-                        job.getAuthor().getAddress(),
-                        job.getAuthor().getCity(),
-                        job.getAuthor().getCountry()
-                )
-                        : null
+                 ) : null,
+                 new AuthorDto(
+                    job.getAuthor().getId(),
+                    job.getAuthor().getFullName(),
+                    job.getAuthor().getEmail(),
+                    job.getAuthor().getAddress(),
+                    job.getAuthor().getCity(),
+                    job.getAuthor().getCountry()
+                 )
         );
     }
 

@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import z from "zod";
+import type z from "zod";
 import type { FormSubmitEvent } from "@nuxt/ui";
 import type { User } from "~/types";
+import { profileSchema } from "~/schemas";
 
 useHead({
   title: "Profile",
@@ -11,16 +12,11 @@ const { user } = useAuth();
 
 const toast = useToast();
 
-const ProfileSchema = z.object({
-  email: z.email("Invalid email address"),
-  fullName: z.string().min(2, "Full name must be at least 2 characters long"),
+const schema = profileSchema;
 
-  address: z.string().optional(),
-  city: z.string().optional(),
-  country: z.string().optional(),
-});
+type Schema = z.output<typeof schema>;
 
-const state = reactive<Partial<z.output<typeof ProfileSchema>>>({
+const state = reactive<Partial<Schema>>({
   email: user.value?.email || "",
   fullName: user.value?.fullName || "",
   address: user.value?.address || "",
@@ -30,9 +26,7 @@ const state = reactive<Partial<z.output<typeof ProfileSchema>>>({
 
 const loading = ref(false);
 
-async function onSubmit(
-  event: FormSubmitEvent<z.output<typeof ProfileSchema>>
-) {
+async function onSubmit(event: FormSubmitEvent<Schema>) {
   const hasChanges =
     event.data.email !== user.value?.email ||
     event.data.fullName !== user.value?.fullName ||
@@ -80,12 +74,7 @@ async function onSubmit(
 
 <template>
   <NuxtLayout name="settings">
-    <UForm
-      :schema="ProfileSchema"
-      :state="state"
-      class="space-y-6"
-      @submit="onSubmit"
-    >
+    <UForm :schema="schema" :state="state" class="space-y-6" @submit="onSubmit">
       <div class="flex flex-col gap-8 *:w-full *:**:w-full max-w-xl">
         <FormsHeader>
           When you post a job announcement as a personal user, the information

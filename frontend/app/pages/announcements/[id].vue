@@ -1,4 +1,9 @@
 <script setup lang="ts">
+import {
+  contractTypeLabels,
+  workloadTypeLabels,
+  workModeLabels,
+} from "~/constants";
 import type { JobAnnouncementDetailsResponse } from "~/types";
 
 const route = useRoute();
@@ -6,6 +11,21 @@ const route = useRoute();
 const { data } = await useAPI<JobAnnouncementDetailsResponse>(
   `/api/job-announcements/${route.params.id}`
 );
+
+const { isJobSeekerExists } = useJobSeeker();
+const { checked, fetchApplications, applications } = useApplications();
+
+const toast = useToast();
+
+const isOwner = computed(() => {
+  const { user } = useAuth();
+
+  if (!data.value || !user.value) {
+    return false;
+  }
+
+  return String(data.value.author?.id) === String(user.value.id);
+});
 
 const annAddress = computed(() => {
   if (!data.value) {
@@ -60,28 +80,128 @@ const authorAddress = computed(() => {
   const author = data.value.author;
   const company = data.value.company;
 
-  if (author?.address && author?.city && author?.country) {
-    return `${author.address}, ${author.city}, ${author.country}`;
-  } else if (company?.address && company?.city && company?.country) {
+  if (company?.address && company?.city && company?.country) {
     return `${company.address}, ${company.city}, ${company.country}`;
+  } else {
+    if (author?.address && author?.city && author?.country) {
+      return `${author.address}, ${author.city}, ${author.country}`;
+    }
   }
 
   return null;
 });
+
+const authorEmail = computed(() => {
+  if (!data.value) {
+    return null;
+  }
+
+  return data.value.company?.email || data.value.author?.email || null;
+});
+
+const websiteUrl = computed(() => {
+  if (!data.value) {
+    return null;
+  }
+
+  return data.value.company?.website || null;
+});
+
+const alreadyApplied = computed(() => {
+  if (!data.value) {
+    return false;
+  }
+
+  return applications.value.some(
+    app => app.jobAnnouncementId === data.value!.id
+  );
+});
+
+const loading = ref(false);
+
+const apply = async () => {
+  if (!data.value) {
+    return;
+  }
+
+  if (isOwner.value) {
+    toast.add({
+      title: "You cannot apply to your own announcement!",
+      color: "warning",
+    });
+    return;
+  }
+
+  console.log(isJobSeekerExists.value);
+
+  if (!isJobSeekerExists.value) {
+    toast.add({
+      title:
+        "Please create a job seeker profile before applying. You can do this in the settings section.",
+      color: "info",
+    });
+    return;
+  }
+
+  try {
+    loading.value = true;
+    const { error } = await useAPI(
+      `/api/applications/job-announcements/${data.value.id}`,
+      {
+        method: "POST",
+      }
+    );
+
+    if (error.value) {
+      throw error.value;
+    }
+
+    checked.value = false;
+    await fetchApplications();
+
+    toast.add({
+      title: "Application submitted successfully!",
+      color: "success",
+    });
+  } catch (err) {
+    console.log(err);
+    toast.add({
+      title: "Something went wrong while submitting the application.",
+      color: "error",
+    });
+  } finally {
+    loading.value = false;
+  }
+};
 </script>
 
 <template>
-  <div v-if="!data">
+  <div v-if="!data" class="flex flex-col gap-4">
     <BackButton label="Back to announcements" />
     <p>Announcement not found.</p>
   </div>
 
   <div v-else class="flex flex-col gap-4">
-    <BackButton label="Back to announcements" />
+    <div
+      class="flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+    >
+      <BackButton
+        label="Back to announcements"
+        class="min-w-full sm:min-w-fit"
+      />
+      <UButton
+        class="cursor-pointer justify-center"
+        :disabled="alreadyApplied"
+        :loading="loading"
+        @click="apply"
+      >
+        {{ alreadyApplied ? "Already applied!" : "Apply Now" }}
+      </UButton>
+    </div>
     <div
       class="flex flex-col gap-4 py-3 border-l-2 px-4 dark:bg-gray-800/50 bg-gray-200/50 border-gray-300 dark:border-gray-600 rounded-e-md"
     >
-      <div class="flex items-center justify-between gap-4">
+      <div class="flex items-center flex-wrap-reverse justify-between gap-4">
         <AnnouncementsElementsIndustryBadge
           :industry-name="data.industryName"
           size="xl"
@@ -105,19 +225,28 @@ const authorAddress = computed(() => {
         :author-name="data.author?.fullName || null"
         size="xl"
       />
-      <div
-        class="flex items-center gap-1 py-1 px-2 rounded-md border border-gray-300 dark:border-gray-600"
+      <AnnouncementsElementsTile
+        icon="material-symbols:mail-outline-rounded"
+        :data="authorEmail"
+      />
+      <AnnouncementsElementsTile
+        icon="material-symbols:location-on-outline"
+        :data="authorAddress"
+      />
+      <AnnouncementsElementsTile
+        icon="material-symbols:public-outline"
+        :data="websiteUrl"
       >
-        <UIcon name="material-symbols:mail-outline-rounded" />
-        {{ data.author?.email }}
-      </div>
-      <div
-        v-if="authorAddress"
-        class="flex items-center gap-1 bg-gray-100 dark:bg-gray-800 py-1 px-2 rounded-md border border-gray-300 dark:border-gray-600"
-      >
-        <UIcon name="material-symbols:location-on-outline" class="shrink-0" />
-        {{ authorAddress }}
-      </div>
+        <a
+          v-if="websiteUrl"
+          :href="websiteUrl"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="underline hover:text-primary transition-colors"
+        >
+          Website
+        </a>
+      </AnnouncementsElementsTile>
     </div>
 
     <div

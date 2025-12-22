@@ -194,3 +194,13 @@ export type JobAnnouncementDetailsResponse = {
   company?: CompanyDetails | null;
   author?: Author | null;
 };
+
+export type Application = {
+  id: number;
+  jobAnnouncementId: number;
+  jobSeekerEmail: string;
+  jobSeekerFullName: string;
+  jobSeekerMessage: string;
+  appliedAt: string;
+};
+

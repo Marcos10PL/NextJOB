@@ -10,6 +10,12 @@ import type {
   WorkMode,
 } from "~/types";
 import type { CheckboxGroupItem } from "@nuxt/ui";
+import {
+  contractTypeLabels,
+  paymentTypeLabels,
+  workloadTypeLabels,
+  workModeLabels,
+} from "~/constants";
 
 const { header = true } = defineProps<{
   header?: boolean;

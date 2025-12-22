@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { FormSubmitEvent } from "@nuxt/ui";
-import z from "zod";
+import type z from "zod";
+import { registerSchema } from "~/schemas";
 import type { FetchError } from "~/types";
 
 const loading = ref(false);
@@ -10,32 +11,18 @@ const success = ref(false);
 const toast = useToast();
 const router = useRouter();
 
-const registerSchema = z
-  .object({
-    fullName: z
-      .string()
-      .min(2, "Full name must be at least 2 characters long"),
-    email: z.email("Invalid email address"),
-    password: z.string().min(8, "Password must be at least 8 characters long"),
-    confirmPassword: z
-      .string()
-      .min(8, "Confirm password must be at least 8 characters long"),
-  })
-  .refine(data => data.password === data.confirmPassword, {
-    message: "Passwords do not match",
-    path: ["confirmPassword"],
-  });
+const schema = registerSchema;
 
-const state = reactive({
+type Schema = z.output<typeof schema>;
+
+const state = reactive<Schema>({
   email: "",
   password: "",
   fullName: "",
   confirmPassword: "",
 });
 
-const onSubmit = async (
-  event: FormSubmitEvent<z.output<typeof registerSchema>>
-) => {
+const onSubmit = async (event: FormSubmitEvent<Schema>) => {
   try {
     loading.value = true;
     error.value = null;
@@ -53,8 +40,8 @@ const onSubmit = async (
     toast.add({ title: "Registration Successful. You can now log in." });
     router.push("/?tab=signin#control-active-item");
   } catch (err) {
+    console.error(err);
     error.value = (err as FetchError).status || 500;
-    // console.error(err);
   } finally {
     loading.value = false;
   }
@@ -64,7 +51,7 @@ const onSubmit = async (
 <template>
   <UForm
     class="min-w-full flex flex-col gap-4 items-center justify-center rounded-lg"
-    :schema="registerSchema"
+    :schema="schema"
     :state="state"
     @submit="onSubmit"
   >

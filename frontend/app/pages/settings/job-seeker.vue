@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import z from "zod";
+import type z from "zod";
 import type { FormSubmitEvent } from "@nuxt/ui";
-import { ACCEPTED_FILE_TYPES, MAX_FILE_SIZE } from "~/constants";
 import type { JobSeeker } from "~/types";
 import deepEqual from "fast-deep-equal";
+import { jobSeekerSchema } from "~/schemas";
+import { JOB_SEEKER_DESC_MAX_SIZE } from "~/constants";
 
 useHead({
   title: "Job Seeker",
@@ -13,31 +14,13 @@ const { user } = useAuth();
 
 const toast = useToast();
 
-const { data: jobSeekerData, status } = await useAPI("/api/job-seekers/me", {
-  method: "GET",
-});
+const { jobSeeker, isJobSeekerExists } = useJobSeeker();
 
-const ProfileSchema = z.object({
-  email: z.email("Invalid email address"),
-  fullName: z.string().min(2, "Full name must be at least 2 characters long"),
-  message: z.string().min(10, "Message must be at least 10 characters long"),
-  cv: z
-    .instanceof(File, {
-      message: "Please select a PDF file.",
-    })
-    .refine(file => file.size <= MAX_FILE_SIZE, {
-      message: `The file is too large. Please choose a file smaller than ${formatBytes(MAX_FILE_SIZE)}.`,
-    })
-    .refine(file => ACCEPTED_FILE_TYPES.includes(file.type), {
-      message: "Please upload a valid PDF file.",
-    })
-    .optional(),
-});
+const schema = jobSeekerSchema;
 
-const jobSeeker = computed(() => jobSeekerData.value || null);
-const isJobSeekerExists = ref(!!jobSeeker.value);
+type Schema = z.output<typeof jobSeekerSchema>;
 
-const state = reactive<Partial<z.output<typeof ProfileSchema>>>({
+const state = reactive<Partial<Schema>>({
   email: user.value?.email || "",
   fullName: user.value?.fullName || "",
   message: "",
@@ -55,9 +38,7 @@ watch(
 
 const loading = ref(false);
 
-async function onSubmit(
-  event: FormSubmitEvent<z.output<typeof ProfileSchema>>
-) {
+async function onSubmit(event: FormSubmitEvent<Schema>) {
   const hasChanges = !deepEqual(event.data, {
     ...jobSeeker.value,
     cv: undefined,
@@ -89,7 +70,7 @@ async function onSubmit(
 
     if (data.value) {
       Object.assign(state, data.value);
-      jobSeekerData.value = data.value;
+      jobSeeker.value = data.value;
       isJobSeekerExists.value = true;
     }
   } else {
@@ -110,7 +91,7 @@ async function onSubmit(
 
     if (data.value) {
       Object.assign(state, data.value);
-      jobSeekerData.value = data.value;
+      jobSeeker.value = data.value;
     }
   }
 
@@ -124,12 +105,7 @@ async function onSubmit(
 
 <template>
   <NuxtLayout name="settings">
-    <UForm
-      :schema="ProfileSchema"
-      :state="state"
-      class="space-y-6"
-      @submit="onSubmit"
-    >
+    <UForm :schema="schema" :state="state" class="space-y-6" @submit="onSubmit">
       <div class="flex flex-col gap-8 *:w-full max-w-xl">
         <FormsHeader>
           This is your job seeker profile information. It will be used to
@@ -142,9 +118,15 @@ async function onSubmit(
           <UInput v-model="state.fullName" class="w-full" />
         </UFormField>
 
-        <UFormField label="Message" name="message">
-          <UTextarea v-model="state.message" :rows="6" class="w-full" />
-        </UFormField>
+        <FormsTextarea
+          v-model="state.message"
+          :max-size="JOB_SEEKER_DESC_MAX_SIZE"
+          :rows="5"
+          label="Message"
+          name="message"
+          placeholder="Your message..."
+          description="Provide a brief message about yourself."
+        />
 
         <UFormField name="cv" label="CV Upload">
           <UFileUpload
@@ -162,7 +144,7 @@ async function onSubmit(
         <UButton
           type="submit"
           class="px-8 max-h-fit self-end justify-center cursor-pointer"
-          :disabled="loading || status === 'pending'"
+          :disabled="loading"
         >
           {{ isJobSeekerExists ? "Update Profile" : "Create Profile" }}
         </UButton>

@@ -1,4 +1,9 @@
 <script setup lang="ts">
+import {
+  contractTypeLabels,
+  workloadTypeLabels,
+  workModeLabels,
+} from "~/constants";
 import type { JobAnnouncementListItem, WorkModeEnum } from "~/types";
 
 const { jobAnn } = defineProps<{

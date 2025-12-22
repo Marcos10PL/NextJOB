@@ -2,9 +2,16 @@ import { AuthRole } from "~/types";
 
 export default defineNuxtRouteMiddleware(async to => {
   const { user, fetchUser } = useAuth();
+  const { fetchJobSeeker } = useJobSeeker();
+  const { fetchApplications } = useApplications();
 
   if (!user.value) {
     await fetchUser();
+  }
+
+  if (user.value) {
+    await fetchJobSeeker();
+    await fetchApplications();
   }
 
   const protectedRoutes = ["/post-job", "/settings", "/announcements"];

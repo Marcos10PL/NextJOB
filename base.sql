@@ -115,5 +115,7 @@ CREATE TABLE applications (
     applied_at TIMESTAMP WITHOUT TIME ZONE DEFAULT now(),
 
     CONSTRAINT applications_job_announcement_id_fkey FOREIGN KEY (job_announcement_id) REFERENCES job_announcements(id) ON DELETE CASCADE,
-    CONSTRAINT applications_job_seeker_id_fkey FOREIGN KEY (job_seeker_id) REFERENCES job_seekers(id) ON DELETE CASCADE
+    CONSTRAINT applications_job_seeker_id_fkey FOREIGN KEY (job_seeker_id) REFERENCES job_seekers(id) ON DELETE CASCADE,
+
+    UNIQUE (job_announcement_id, job_seeker_id)
 );

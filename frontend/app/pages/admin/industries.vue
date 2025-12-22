@@ -67,7 +67,7 @@ const columns: TableColumn<Industry>[] = [
             "aria-label": "Actions dropdown",
             onClick: () => deleteIndustry(row.getValue("id")),
           },
-          "Delete"
+          { default: () => "Delete" }
         ),
         h(
           UButton,
@@ -77,11 +77,10 @@ const columns: TableColumn<Industry>[] = [
             class: "text-blue-300 cursor-pointer",
             "aria-label": "Actions dropdown",
             onClick: () => (
-              (openModal.value = true),
-              (industryToEdit.value = row.original)
+              (openModal.value = true), (industryToEdit.value = row.original)
             ),
           },
-          "Update"
+          { default: () => "Update" }
         ),
       ]);
     },
